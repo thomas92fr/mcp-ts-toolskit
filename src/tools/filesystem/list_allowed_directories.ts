@@ -20,7 +20,8 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
     // Enregistrement de l'outil
     server.addTool({
         name: ToolName,
-        description: "Liste les répertoires autorisés pour les opérations sur le système de fichiers",
+        description: "Returns the list of directories that this server is allowed to access. " +
+          "Use this to understand which directories are available before trying to access files.",
         parameters: z.object({}),
         execute: async (args, context) => {
                     return logger.withOperationContext(async () => {
