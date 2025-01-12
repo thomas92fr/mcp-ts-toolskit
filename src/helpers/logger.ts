@@ -2,6 +2,11 @@ import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { AppConfig } from '../models/appConfig.js';
 import path from "path";
+import crypto from "crypto";
+
+export function generateGuid(): string {
+  return crypto.randomUUID();
+} 
 
 export function createLogger(config : AppConfig): winston.Logger {
           const customFormat = winston.format.printf(({ level, message, timestamp, stack, ...meta }) => {

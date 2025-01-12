@@ -5,10 +5,12 @@ import { createLogger } from "./helpers/logger.js";
 import * as winston from 'winston';
 import path from "path";
 import { fileURLToPath } from "url";
-import { add_FileSystem_ReadMultipleFiles_Tool, FileSystem_ReadMultipleFiles_ToolName } from "./tools/filesystem/read_multiple_files.js";
+import * as ReadMultipleFiles from "./tools/filesystem/read_multiple_files.js";
 
 let tmplogger : winston.Logger | null = null;
 try {
+    
+    //on récupere l'emplacement du index.js 
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     
@@ -59,8 +61,7 @@ try {
     });
   
     //ajout des outils
-    if(config.validateTool(FileSystem_ReadMultipleFiles_ToolName))
-        add_FileSystem_ReadMultipleFiles_Tool(server, config, logger);
+    ReadMultipleFiles.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({

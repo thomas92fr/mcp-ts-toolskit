@@ -2,13 +2,17 @@ import { z } from "zod";
 import { FastMCP } from "fastmcp";
 import { AppConfig } from "../../models/appConfig.js";
 import * as winston from 'winston';
-import path from "path";
 import fs from "fs/promises";
+import { generateGuid } from "../../helpers/logger.js";
 
-export const FileSystem_ReadMultipleFiles_ToolName : string = `read_multiple_files`;
+export const ToolName : string = `read_multiple_files`;
 
-export function add_FileSystem_ReadMultipleFiles_Tool(server: FastMCP, config: AppConfig, logger : winston.Logger) {
+export function Add_Tool(server: FastMCP, config: AppConfig, logger : winston.Logger) : void {
   
+    //on regarde si l'outil n'est pas interdit
+    if(!config.validateTool(ToolName))
+        return;
+
     // Schéma de validation pour les arguments
     const ReadMultipleFilesArgsSchema = z.object({
         paths: z.array(z.string()),
@@ -16,7 +20,7 @@ export function add_FileSystem_ReadMultipleFiles_Tool(server: FastMCP, config: A
 
     // Ajout de l'outil au serveur
     server.addTool({
-        name: FileSystem_ReadMultipleFiles_ToolName,
+        name: ToolName,
         description: "Read the contents of multiple files simultaneously. This is more " +
           "efficient than reading files one by one when you need to analyze " +
           "or compare multiple files. Each file's content is returned with its " +
@@ -24,7 +28,9 @@ export function add_FileSystem_ReadMultipleFiles_Tool(server: FastMCP, config: A
           "the entire operation. Only works within allowed directories.",
         parameters: ReadMultipleFilesArgsSchema,
         execute: async (args, context) => {
-            logger.info(`Appel de l'outil '${FileSystem_ReadMultipleFiles_ToolName}': `, [args]);
+            const operationId = generateGuid();
+            logger.info(`[${operationId}] Appel de l'outil '${ToolName}': `, {operationId, args});
+    
             
             const results = await Promise.all(
                 args.paths.map(async (filePath: string) => {
