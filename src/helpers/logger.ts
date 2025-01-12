@@ -28,7 +28,7 @@ export function createLogger(config : AppConfig): winston.Logger {
           
     
         const transport: DailyRotateFile = new DailyRotateFile({     
-          filename: path.join(config.basePath,'app-logs-%DATE%.txt'),
+          filename: path.join(config.BasePath,'app-logs-%DATE%.txt'),
             datePattern: 'YYYY-MM-DD',
             maxFiles: '7d'
         });

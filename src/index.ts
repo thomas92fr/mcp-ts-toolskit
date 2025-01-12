@@ -5,6 +5,7 @@ import { createLogger } from "./helpers/logger.js";
 import * as winston from 'winston';
 import path from "path";
 import { fileURLToPath } from "url";
+import { add_FileSystem_ReadMultipleFiles_Tool, FileSystem_ReadMultipleFiles_ToolName } from "./tools/filesystem/read_multiple_files.js";
 
 let tmplogger : winston.Logger | null = null;
 try {
@@ -39,6 +40,7 @@ try {
         version: "0.1.0",
     });
 
+    //on bind les events du serveur vers les logs
     server.on("connect", (event) => {
         logger?.info("Client connected:", event.session);
 
@@ -55,21 +57,10 @@ try {
     server.on("disconnect", (event) => {
         logger?.info("Client disconnected:", event.session);
     });
-
-    
+  
     //ajout des outils
-    server.addTool({
-        name: "plouf",
-        description: "Add two numbers",
-        parameters: z.object({
-            a: z.number(),
-            b: z.number(),
-        }),
-        execute: async (args, context) => {
-            logger.info(`Appel de l'outil: `,[args]);
-            return String(args.a + args.b);
-        },
-    });
+    if(config.validateTool(FileSystem_ReadMultipleFiles_ToolName))
+        add_FileSystem_ReadMultipleFiles_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({

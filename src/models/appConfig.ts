@@ -8,17 +8,17 @@ export interface IGitConfig {
     /**
      * Nom de l'utilisateur, utilisé pour les opérations GIT
      */
-    userName: string;
+    UserName: string;
 
     /**
      * Email de l'utilisateur, utilisé pour les opérations GIT
      */
-    userEmail: string;
+    UserEmail: string;
 
     /**
      * Mot de passe de l'utilisateur, utilisé pour les opérations GIT (en remote)
      */
-    userPassword: string;
+    UserPassword: string;
 }
 
 /**
@@ -28,12 +28,12 @@ export interface IBraveSearchConfig {
     /**
      * Token a utiliser pour les appels a l'API BraveSearch
      */
-    apiKey: string;
+    ApiKey: string;
 
     /**
      * Indique si on ignore ou non les erreurs SSL lors des appels a l'API BraveSearch
      */
-    ignoreSSLErrors: boolean;
+    IgnoreSSLErrors: boolean;
 }
 
 /**
@@ -43,44 +43,44 @@ export interface IAppConfig {
     /**
      * Chemin du programme
      */
-    basePath: string;
+    BasePath: string;
 
     /**
      * Liste des répertoires autorisés pour les opérations sur le système de fichiers
      */
-    allowedDirectories: string[];
+    AllowedDirectories: string[];
 
     /**
      * Liste des outils interdits
      */
-    forbiddenTools: string[];
+    ForbiddenTools: string[];
 
     /**
      * Configuration spécifique pour BraveSearch API
      */
-    braveSearch: IBraveSearchConfig;
+    BraveSearch: IBraveSearchConfig;
 
     /**
      * Configuration spécifique pour GIT
      */
-    git: IGitConfig;
+    Git: IGitConfig;
 }
 
 /**
  * Classe implémentant l'interface IAppConfig avec les valeurs par défaut
  */
 export class AppConfig implements IAppConfig {
-    basePath: string = process.cwd();
-    allowedDirectories: string[] = [];
-    forbiddenTools: string[] = [];
-    braveSearch: IBraveSearchConfig = {
-        apiKey: '',
-        ignoreSSLErrors: false
+    BasePath: string = process.cwd();
+    AllowedDirectories: string[] = [];
+    ForbiddenTools: string[] = [];
+    BraveSearch: IBraveSearchConfig = {
+        ApiKey: '',
+        IgnoreSSLErrors: false
     };
-    git: IGitConfig = {
-        userName: '',
-        userEmail: '',
-        userPassword: ''
+    Git: IGitConfig = {
+        UserName: '',
+        UserEmail: '',
+        UserPassword: ''
     };
 
     /**
@@ -88,13 +88,13 @@ export class AppConfig implements IAppConfig {
      */
     private normalizePathProperties(): void {
         // Normalise le chemin des logs
-        if (this.basePath) {
-            this.basePath = path.resolve(this.basePath);
+        if (this.BasePath) {
+            this.BasePath = path.resolve(this.BasePath);
         }
 
         // Normalise les chemins des répertoires autorisés
-        if (this.allowedDirectories) {
-            this.allowedDirectories = this.allowedDirectories.map(dir => 
+        if (this.AllowedDirectories) {
+            this.AllowedDirectories = this.AllowedDirectories.map(dir => 
                 path.resolve(dir));
         }
     }
@@ -105,7 +105,7 @@ export class AppConfig implements IAppConfig {
      */
     validatePath(filePath: string): string {
         const fullPath = path.resolve(filePath);
-        if (!this.allowedDirectories.some(dir => fullPath.startsWith(path.resolve(dir)))) {
+        if (!this.AllowedDirectories.some(dir => fullPath.startsWith(path.resolve(dir)))) {
             throw new Error(`Access denied - path outside allowed directories: ${fullPath}`);
         }
         return fullPath;
@@ -115,7 +115,7 @@ export class AppConfig implements IAppConfig {
      * Valide qu'un nom d'outils est autorisé
      */
     validateTool(toolName: string): boolean {
-        return !this.forbiddenTools.some(tool => 
+        return !this.ForbiddenTools.some(tool => 
             tool?.toLowerCase() === toolName?.toLowerCase());
     }
 

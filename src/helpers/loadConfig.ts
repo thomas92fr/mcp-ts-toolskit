@@ -38,7 +38,7 @@ export async function loadConfig(base_path: string): Promise<AppConfig|null> {
    
     // Charger et parser le fichier de configuration 
     let config = await AppConfig.loadFromFile(configPath);
-    config.basePath = base_path;
+    config.BasePath = base_path;
     return config;
    
 }
