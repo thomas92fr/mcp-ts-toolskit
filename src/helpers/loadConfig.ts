@@ -2,6 +2,29 @@ import path from 'path';
 import { fileExists } from "./file.js";
 import { AppConfig } from '../models/appConfig.js';
 
+/**
+* Charge la configuration de l'application à partir d'un fichier JSON.
+* Cette fonction recherche le fichier de configuration selon un ordre de priorité défini,
+* le charge et initialise une instance de AppConfig.
+* 
+* Ordre de recherche du fichier de configuration :
+* 1. Argument en ligne de commande (premier argument finissant par 'config.json')
+* 2. Variable d'environnement 'MCP_TOOLSKIT_CONFIG_PATH'
+* 3. Fichier 'config.json' dans le répertoire de base spécifié
+* 
+* @param base_path Le chemin de base de l'application, utilisé pour la recherche du fichier config.json
+*                 et défini comme BasePath dans la configuration
+* @returns Une Promise contenant soit :
+*          - Une instance de AppConfig initialisée avec les valeurs du fichier
+*          - null en cas d'échec du chargement
+* @throws Error si aucun fichier de configuration valide n'est trouvé
+* 
+* @example
+* const config = await loadConfig(__dirname);
+* if (!config) {
+*   throw new Error('Failed to load configuration');
+* }
+*/
 export async function loadConfig(base_path: string): Promise<AppConfig|null> {
     let configPath: string | undefined;
     

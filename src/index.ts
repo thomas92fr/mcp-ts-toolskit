@@ -1,13 +1,14 @@
 import { FastMCP } from "fastmcp";
-import { z } from "zod";
 import { loadConfig } from "./helpers/loadConfig.js";
-import { createLogger } from "./helpers/logger.js";
-import * as winston from 'winston';
+import { createLogger, ExtendedLogger } from "./helpers/logger.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import * as ReadMultipleFiles from "./tools/filesystem/read_multiple_files.js";
 
-let tmplogger : winston.Logger | null = null;
+const SERVER_NAME = `mcp-ts-toolskit`;
+const SERVER_VERSION = `0.1.0`;
+
+let tmplogger : ExtendedLogger | null = null;
 try {
     
     //on récupere l'emplacement du index.js 
@@ -34,12 +35,12 @@ try {
     }
     const logger = tmplogger!;
 
-    logger.info(configMsg);
+    //logger.info(configMsg);
       
     // Créer et configurer le serveur
     const server = new FastMCP({
-        name: "mcp-ts-toolskit",
-        version: "0.1.0",
+        name: SERVER_NAME,
+        version: SERVER_VERSION,
     });
 
     //on bind les events du serveur vers les logs
@@ -67,6 +68,8 @@ try {
     server.start({
         transportType: "stdio",
     });   
+
+    logger.info("Serveur démarré sur stdio", { name: SERVER_NAME , version: SERVER_VERSION });
     
 } catch (error) {
     if (error instanceof Error) {

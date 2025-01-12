@@ -1,20 +1,27 @@
 import { z } from "zod";
 import { FastMCP } from "fastmcp";
 import { AppConfig } from "../../models/appConfig.js";
-import * as winston from 'winston';
 import fs from "fs/promises";
-import { generateGuid } from "../../helpers/logger.js";
+import { ExtendedLogger } from "../../helpers/logger.js";
 
 export const ToolName : string = `read_multiple_files`;
 
-export function Add_Tool(server: FastMCP, config: AppConfig, logger : winston.Logger) : void {
+/**
+* Ajoute l'outil au serveur MCP.
+* 
+* @param server Instance du serveur FastMCP sur laquelle ajouter l'outil
+* @param config Configuration de l'application contenant notamment les répertoires autorisés
+* @param logger Instance du logger pour tracer les opérations
+* 
+*/
+export function Add_Tool(server: FastMCP, config: AppConfig, logger : ExtendedLogger) : void {
   
     //on regarde si l'outil n'est pas interdit
     if(!config.validateTool(ToolName))
         return;
 
     // Schéma de validation pour les arguments
-    const ReadMultipleFilesArgsSchema = z.object({
+    const ClientArgsSchema = z.object({
         paths: z.array(z.string()),
     });
 
@@ -26,26 +33,29 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger : winston.Lo
           "or compare multiple files. Each file's content is returned with its " +
           "path as a reference. Failed reads for individual files won't stop " +
           "the entire operation. Only works within allowed directories.",
-        parameters: ReadMultipleFilesArgsSchema,
+        parameters: ClientArgsSchema,
         execute: async (args, context) => {
-            const operationId = generateGuid();
-            logger.info(`[${operationId}] Appel de l'outil '${ToolName}': `, {operationId, args});
-    
-            
-            const results = await Promise.all(
-                args.paths.map(async (filePath: string) => {
+            return logger.withOperationContext(async () => {
+                logger.info(`Appel de l'outil '${ToolName}': `, args);
+                
+                const results = await Promise.all(
+                    args.paths.map(async (filePath: string) => {
+                        config.validatePath(filePath);
+                        
+                        try {
+                            const content = await fs.readFile(filePath, "utf-8");
+                            logger.debug(`Fichier lu avec succès: ${filePath}`);
+                            return `${filePath}:\n${content}\n`;
+                        } catch (error) {
+                            logger.error(`Erreur lors de la lecture du fichier ${filePath}:`, error);
+                            throw error;
+                        }
+                    })
+                );
 
-                    // Vérification que le chemin est dans un répertoire autorisé
-                    config.validatePath(filePath);
-                                            
-                    // Lecture du fichier
-                    const content = await fs.readFile(filePath, "utf-8");
-                    return `${filePath}:\n${content}\n`;
-                   
-                })
-            );
-
-            return results.join("\n---\n");
+                logger.info(`Lecture des fichiers terminée avec succès`);
+                return results.join("\n---\n");
+            });
         },
     });
 }
