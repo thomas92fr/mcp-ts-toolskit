@@ -9,7 +9,8 @@
         "outDir": "dist",
         "rootDir": "src",
         "moduleResolution": "NodeNext",
-        "module": "NodeNext"
+        "module": "NodeNext",
+        "sourceMap": true
     },
     "include": [
         "src/**/*"
