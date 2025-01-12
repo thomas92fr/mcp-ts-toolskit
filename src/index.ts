@@ -4,6 +4,7 @@ import { createLogger, ExtendedLogger } from "./helpers/logger.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import * as FileSystem from "./tools/filesystem/index.js";
+import * as Web from "./tools/web/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
@@ -73,6 +74,9 @@ try {
     FileSystem.CreateDirectory.Add_Tool(server, config, logger);
     FileSystem.EditFile.Add_Tool(server, config, logger);
     FileSystem.WriteFile.Add_Tool(server, config, logger);
+
+    //ajout des outils web
+    Web.BraveSearch.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({
