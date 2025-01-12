@@ -41,9 +41,9 @@ export interface IBraveSearchConfig {
  */
 export interface IAppConfig {
     /**
-     * Chemin des fichiers de logs
+     * Chemin du programme
      */
-    logPath: string;
+    basePath: string;
 
     /**
      * Liste des répertoires autorisés pour les opérations sur le système de fichiers
@@ -70,7 +70,7 @@ export interface IAppConfig {
  * Classe implémentant l'interface IAppConfig avec les valeurs par défaut
  */
 export class AppConfig implements IAppConfig {
-    logPath: string = process.cwd();
+    basePath: string = process.cwd();
     allowedDirectories: string[] = [];
     forbiddenTools: string[] = [];
     braveSearch: IBraveSearchConfig = {
@@ -88,8 +88,8 @@ export class AppConfig implements IAppConfig {
      */
     private normalizePathProperties(): void {
         // Normalise le chemin des logs
-        if (this.logPath) {
-            this.logPath = path.resolve(this.logPath);
+        if (this.basePath) {
+            this.basePath = path.resolve(this.basePath);
         }
 
         // Normalise les chemins des répertoires autorisés

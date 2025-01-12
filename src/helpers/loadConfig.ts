@@ -2,7 +2,7 @@ import path from 'path';
 import { fileExists } from "./file.js";
 import { AppConfig } from '../models/appConfig.js';
 
-export async function loadConfig(): Promise<AppConfig|null> {
+export async function loadConfig(base_path: string): Promise<AppConfig|null> {
     let configPath: string | undefined;
     
     // 1. Vérifier les arguments de ligne de commande
@@ -19,24 +19,13 @@ export async function loadConfig(): Promise<AppConfig|null> {
     
     // 3. Vérifier à côté de l'exécutable
     if (!configPath) {
-        // Utiliser le répertoire de travail actuel
-        const currentDir = process.cwd();
-        
-        // Liste des emplacements possibles pour config.json
-        const possiblePaths = [
-            path.join(currentDir, 'config.json'),           // À la racine du projet
-            path.join(currentDir, 'dist', 'config.json'),   // Dans le dossier dist
-        ];
-        
-        // Chercher dans tous les emplacements possibles
-        for (const potentialPath of possiblePaths) {
-            if (fileExists(potentialPath)) {
-                configPath = potentialPath;
-                break;
-            }
+        const defaultConfigPath = path.join(base_path, 'config.json');
+
+        if (fileExists(defaultConfigPath)) {
+            configPath = defaultConfigPath;
         }
     }
-    
+
     // Si aucune configuration n'est trouvée, lever une erreur
     if (!configPath) {
         throw new Error(
@@ -48,6 +37,8 @@ export async function loadConfig(): Promise<AppConfig|null> {
     }
    
     // Charger et parser le fichier de configuration 
-    return await AppConfig.loadFromFile(configPath);
+    let config = await AppConfig.loadFromFile(configPath);
+    config.basePath = base_path;
+    return config;
    
 }
