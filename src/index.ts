@@ -77,7 +77,13 @@ try {
 
     //ajout des outils web
     Web.BraveSearch.Add_Tool(server, config, logger);
-
+    Web.PuppeteerNavigate.Add_Tool(server, config, logger);
+    Web.PuppeteerScreenshot.Add_Tool(server, config, logger);
+    Web.PuppeteerClick.Add_Tool(server, config, logger);
+    Web.PuppeteerFill.Add_Tool(server, config, logger);
+    Web.PuppeteerSelect.Add_Tool(server, config, logger);
+    Web.PuppeteerHover.Add_Tool(server, config, logger);
+    Web.PuppeteerEvaluate.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({
