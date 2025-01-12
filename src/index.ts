@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import * as FileSystem_ReadMultipleFiles from "./tools/filesystem/read_multiple_files.js";
 import * as FileSystem_ListAllowedDirectories from "./tools/filesystem/list_allowed_directories.js";
 import * as FileSystem_GetFileInfo from "./tools/filesystem/get_file_info.js";
+import * as FileSystem_SearchFiles from "./tools/filesystem/search_files.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
@@ -68,6 +69,7 @@ try {
     FileSystem_ListAllowedDirectories.Add_Tool(server, config, logger);
     FileSystem_ReadMultipleFiles.Add_Tool(server, config, logger);
     FileSystem_GetFileInfo.Add_Tool(server, config, logger);
+    FileSystem_SearchFiles.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({
