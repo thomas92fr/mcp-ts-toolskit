@@ -3,14 +3,7 @@ import { loadConfig } from "./helpers/loadConfig.js";
 import { createLogger, ExtendedLogger } from "./helpers/logger.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import * as FileSystem_ReadMultipleFiles from "./tools/filesystem/read_multiple_files.js";
-import * as FileSystem_ListAllowedDirectories from "./tools/filesystem/list_allowed_directories.js";
-import * as FileSystem_GetFileInfo from "./tools/filesystem/get_file_info.js";
-import * as FileSystem_SearchFiles from "./tools/filesystem/search_files.js";
-import * as FileSystem_MoveFile from "./tools/filesystem/move_file.js";
-import * as FileSystem_DirectoryTree from "./tools/filesystem/directory_tree.js";
-import * as FileSystem_ListDirectory from "./tools/filesystem/list_directory.js";
-import * as FileSystem_CreateDirectory from "./tools/filesystem/create_directory.js";
+import * as FileSystem from "./tools/filesystem/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
@@ -70,14 +63,15 @@ try {
     });
   
     //ajout des outils
-    FileSystem_ListAllowedDirectories.Add_Tool(server, config, logger);
-    FileSystem_ReadMultipleFiles.Add_Tool(server, config, logger);
-    FileSystem_GetFileInfo.Add_Tool(server, config, logger);
-    FileSystem_SearchFiles.Add_Tool(server, config, logger);
-    FileSystem_MoveFile.Add_Tool(server, config, logger);
-    FileSystem_DirectoryTree.Add_Tool(server, config, logger);
-    FileSystem_ListDirectory.Add_Tool(server, config, logger);
-    FileSystem_CreateDirectory.Add_Tool(server, config, logger);
+    FileSystem.ListAllowedDirectories.Add_Tool(server, config, logger);
+    FileSystem.ReadMultipleFiles.Add_Tool(server, config, logger);
+    FileSystem.GetFileInfo.Add_Tool(server, config, logger);
+    FileSystem.SearchFiles.Add_Tool(server, config, logger);
+    FileSystem.MoveFile.Add_Tool(server, config, logger);
+    FileSystem.DirectoryTree.Add_Tool(server, config, logger);
+    FileSystem.ListDirectory.Add_Tool(server, config, logger);
+    FileSystem.CreateDirectory.Add_Tool(server, config, logger);
+    FileSystem.EditFile.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({
