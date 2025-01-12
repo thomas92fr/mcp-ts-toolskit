@@ -72,6 +72,7 @@ try {
     FileSystem.ListDirectory.Add_Tool(server, config, logger);
     FileSystem.CreateDirectory.Add_Tool(server, config, logger);
     FileSystem.EditFile.Add_Tool(server, config, logger);
+    FileSystem.WriteFile.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({
