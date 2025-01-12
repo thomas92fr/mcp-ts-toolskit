@@ -77,6 +77,7 @@ try {
 
     //ajout des outils web
     Web.BraveSearch.Add_Tool(server, config, logger);
+    Web.BraveLocalSearch.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({
