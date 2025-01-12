@@ -276,13 +276,13 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
     server.addTool({
         name: ToolName,
         description: "Searches for local businesses and places using Brave's Local Search API. " +
-            "Best for queries related to physical locations, businesses, restaurants, services, etc. " +
-            "Returns detailed information including:\n" +
-            "- Business names and addresses\n" +
-            "- Ratings and review counts\n" +
-            "- Phone numbers and opening hours\n" +
-            "Use this when the query implies 'near me' or mentions specific locations. " +
-            "Automatically falls back to web search if no local results are found.",
+    "Best for queries related to physical locations, businesses, restaurants, services, etc. " +
+    "Returns detailed information including:\n" +
+    "- Business names and addresses\n" +
+    "- Ratings and review counts\n" +
+    "- Phone numbers and opening hours\n" +
+    "Use this when the query implies 'near me' or mentions specific locations. " +
+    "Automatically falls back to web search if no local results are found.",
         parameters: ClientArgsSchema,
         execute: async (args, context) => {
             return logger.withOperationContext(async () => {
