@@ -8,6 +8,7 @@ import * as FileSystem_ListAllowedDirectories from "./tools/filesystem/list_allo
 import * as FileSystem_GetFileInfo from "./tools/filesystem/get_file_info.js";
 import * as FileSystem_SearchFiles from "./tools/filesystem/search_files.js";
 import * as FileSystem_MoveFile from "./tools/filesystem/move_file.js";
+import * as FileSystem_DirectoryTree from "./tools/filesystem/directory_tree.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
@@ -72,6 +73,7 @@ try {
     FileSystem_GetFileInfo.Add_Tool(server, config, logger);
     FileSystem_SearchFiles.Add_Tool(server, config, logger);
     FileSystem_MoveFile.Add_Tool(server, config, logger);
+    FileSystem_DirectoryTree.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({
