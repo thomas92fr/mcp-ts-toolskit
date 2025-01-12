@@ -3,7 +3,9 @@ import { loadConfig } from "./helpers/loadConfig.js";
 import { createLogger, ExtendedLogger } from "./helpers/logger.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import * as ReadMultipleFiles from "./tools/filesystem/read_multiple_files.js";
+import * as FileSystem_ReadMultipleFiles from "./tools/filesystem/read_multiple_files.js";
+import * as FileSystem_ListAllowedDirectories from "./tools/filesystem/list_allowed_directories.js";
+
 
 const SERVER_NAME = `mcp-ts-toolskit`;
 const SERVER_VERSION = `0.1.0`;
@@ -62,7 +64,9 @@ try {
     });
   
     //ajout des outils
-    ReadMultipleFiles.Add_Tool(server, config, logger);
+    FileSystem_ListAllowedDirectories.Add_Tool(server, config, logger);
+    FileSystem_ReadMultipleFiles.Add_Tool(server, config, logger);
+    
 
     //démarrage du serveur MCP sur stdio
     server.start({
