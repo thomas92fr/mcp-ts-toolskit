@@ -1,7 +1,7 @@
 {  
   "name": "@thomas92fr/mcp-ts-toolskit",
-  "version": "0.1.0",
-  "description": "MCP server for filesystem access",
+  "version": "1.0.0",
+  "description": "MCP server toolskit",
   "license": "MIT", 
   "author": "Thomas DEVIN",
   "homepage": "https://github.com/thomas92fr/mcp-ts-toolskit",

@@ -13,7 +13,7 @@ import * as Git from "./tools/git/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
-const SERVER_VERSION = `0.1.0`;
+const SERVER_VERSION = `1.0.0`;
 
 let tmplogger : ExtendedLogger | null = null;
 try {
