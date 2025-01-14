@@ -32,10 +32,14 @@ function createUnifiedDiff(originalContent: string, newContent: string, filepath
 async function applyFileEdits(
     filePath: string,
     edits: Array<{ oldText: string, newText: string }>,
-    dryRun = false
+    dryRun = false,
+    logger?: ExtendedLogger
 ): Promise<string> {
     // Lecture du contenu du fichier et normalisation des fins de ligne
     const content = normalizeLineEndings(await fs.readFile(filePath, 'utf-8'));
+    
+    // Log du contenu original si le logger est disponible
+    logger?.info(`Contenu original du fichier ${filePath}:`, content);
 
     // Application séquentielle des modifications
     let modifiedContent = content;
@@ -140,7 +144,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                 const validPath = config.validatePath(args.path);
 
                 // Application des modifications
-                const diff = await applyFileEdits(validPath, args.edits, args.dryRun);
+                const diff = await applyFileEdits(validPath, args.edits, args.dryRun, logger);
 
                 logger.info(`Modifications du fichier ${args.path} terminées avec succès`);
                 if (args.dryRun) {

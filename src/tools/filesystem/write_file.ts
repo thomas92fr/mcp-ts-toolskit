@@ -39,6 +39,19 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                 // Valider le chemin du fichier
                 const validPath = config.validatePath(args.path);
 
+                // Vérifier si le fichier existe et lire son contenu
+                try {
+                    const fileExists = await fs.access(validPath).then(() => true).catch(() => false);
+                    if (fileExists) {
+                        const originalContent = await fs.readFile(validPath, 'utf-8');
+                        logger.info(`Contenu original du fichier ${validPath}:`, originalContent);
+                    } else {
+                        logger.info(`Le fichier ${validPath} n'existe pas encore - création d'un nouveau fichier`);
+                    }
+                } catch (error) {
+                    logger.error(`Erreur lors de la lecture du fichier original:`, error);
+                }
+
                 // Écrire le contenu dans le fichier
                 await fs.writeFile(validPath, args.content, "utf-8");
                 

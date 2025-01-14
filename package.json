@@ -1,20 +1,20 @@
-{
+{  
   "name": "@thomas92fr/mcp-ts-toolskit",
   "version": "0.1.0",
   "description": "MCP server for filesystem access",
-  "license": "MIT",
+  "license": "MIT", 
   "author": "Thomas DEVIN",
   "homepage": "https://github.com/thomas92fr/mcp-ts-toolskit",
   "bugs": "https://github.com/thomas92fr/mcp-ts-toolskit/issues",
   "type": "module",
   "bin": {
-    "mcp-ts-toolskit": "dist/index.js"
+    "mcp-ts-toolskit": "build/index.js"
   },
   "files": [
-    "dist"
+    "build"
   ],
   "scripts": {
-    "build": "tsc && shx chmod +x dist/*.js",
+    "build": "tsc && shx chmod +x build/*.js",
     "prepare": "npm run build",
     "watch": "tsc --watch"
   },
@@ -24,8 +24,10 @@
     "glob": "^10.3.10",
     "minimatch": "^10.0.1",
     "puppeteer": "^24.0.0",
+    "uuid": "^11.0.5",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
+    "simple-git": "^3.22.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

@@ -81,9 +81,14 @@ async function performWebSearch(
 
     logger.debug(`${results.length} résultats obtenus`);
 
-    return results.map(r =>
+    const formattedResults = results.map(r =>
         `Title: ${r.title}\nDescription: ${r.description}\nURL: ${r.url}`
     ).join('\n\n');
+
+    // Log des résultats formatés
+    logger.info(`Résultats de la recherche:\n${formattedResults}`);
+
+    return formattedResults;
 }
 
 /**

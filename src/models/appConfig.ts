@@ -2,6 +2,17 @@ import path from 'path';
 import fs from 'fs';
 
 /**
+ * Configuration spécifique pour Pandoc
+ */
+export interface IPandocConfig {
+    /**
+     * Chemin vers l'executable de Pandoc
+     */
+    PandocPath: string;
+}
+
+
+/**
  * Configuration spécifique pour GIT
  */
 export interface IGitConfig {
@@ -81,6 +92,9 @@ export class AppConfig implements IAppConfig {
         UserName: '',
         UserEmail: '',
         UserPassword: ''
+    };
+    Pandoc: IPandocConfig = {
+       PandocPath: ''
     };
 
     /**

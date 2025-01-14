@@ -6,7 +6,7 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
-        "outDir": "dist",
+        "outDir": "build",
         "rootDir": "src",
         "moduleResolution": "NodeNext",
         "module": "NodeNext",
@@ -17,6 +17,6 @@
     ],
     "exclude": [
         "node_modules",
-        "dist"
+        "build"
     ]
 }

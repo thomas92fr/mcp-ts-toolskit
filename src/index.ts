@@ -5,6 +5,11 @@ import path from "path";
 import { fileURLToPath } from "url";
 import * as FileSystem from "./tools/filesystem/index.js";
 import * as Web from "./tools/web/index.js";
+import * as Pandoc from "./tools/pandoc/index.js";
+import * as Npm from "./tools/npm/index.js";
+import * as DotNet from "./tools/dotnet/index.js";
+import * as System from "./tools/system/index.js";
+import * as Git from "./tools/git/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
@@ -74,10 +79,33 @@ try {
     FileSystem.CreateDirectory.Add_Tool(server, config, logger);
     FileSystem.EditFile.Add_Tool(server, config, logger);
     FileSystem.WriteFile.Add_Tool(server, config, logger);
+    FileSystem.SearchFileContent.Add_Tool(server, config, logger);
 
     //ajout des outils web
     Web.BraveSearch.Add_Tool(server, config, logger);
 
+    //ajout des outils pandoc
+    Pandoc.MarkdownToDocument.Add_Tool(server, config, logger);
+
+    //ajout des outils npm
+    Npm.NpmInstall.Add_Tool(server, config, logger);
+    Npm.NpmBuild.Add_Tool(server, config, logger);
+
+    //ajout des outils dotnet
+    DotNet.DotNetTool.Add_Tool(server, config, logger);
+
+    //ajout des outils systeme
+    System.GetCurrentDateTime.Add_Tool(server, config, logger);
+
+     //ajout des outils git
+    Git.GitClone.Add_Tool(server, config, logger);
+    Git.GitCommit.Add_Tool(server, config, logger);
+    Git.GitPull.Add_Tool(server, config, logger);
+    Git.GitPush.Add_Tool(server, config, logger);
+    Git.GitResolveConflicts.Add_Tool(server, config, logger);
+    Git.GitStatus.Add_Tool(server, config, logger);
+    Git.GitCheckout.Add_Tool(server, config, logger);
+    Git.GitFetch.Add_Tool(server, config, logger);
 
     //démarrage du serveur MCP sur stdio
     server.start({

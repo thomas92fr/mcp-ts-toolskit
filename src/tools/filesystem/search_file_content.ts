@@ -6,24 +6,26 @@ import { ExtendedLogger } from "../../helpers/logger.js";
 import path from "path";
 import { minimatch } from "minimatch";
 
-export const ToolName: string = `search_files`;
+export const ToolName: string = `search_file_content`;
 
 /**
- * Recherche récursive des fichiers correspondant au pattern
+ * Recherche récursive des fichiers dont le contenu correspond à une expression régulière
  * 
  * @param rootPath Chemin racine de la recherche
- * @param pattern Pattern de recherche
+ * @param regex Expression régulière à rechercher dans le contenu des fichiers
  * @param excludePatterns Patterns d'exclusion optionnels
  * @param config Configuration de l'application
  * @returns Liste des chemins des fichiers trouvés
  */
-async function searchFiles(
+async function searchFileContent(
     rootPath: string,
-    pattern: string,
+    regex: string,
     excludePatterns: string[] = [],
+    fileExtensions: string[] = [],
     config: AppConfig
 ): Promise<string[]> {
     const results: string[] = [];
+    const searchRegex = new RegExp(regex);
 
     async function search(currentPath: string) {
         const entries = await fs.readdir(currentPath, { withFileTypes: true });
@@ -46,16 +48,25 @@ async function searchFiles(
                     continue;
                 }
 
-                // Vérifier le pattern sur le chemin relatif complet
-                if (relativePath.toLowerCase().includes(pattern.toLowerCase())) {
-                    results.push(fullPath);
-                }
-
-                if (entry.isDirectory()) {
+                if (entry.isFile()) {
+                    // Vérifier l'extension du fichier si des extensions sont spécifiées
+                    if (fileExtensions.length > 0) {
+                        const ext = path.extname(entry.name).toLowerCase();
+                        if (!fileExtensions.some(e => ext === (e.startsWith('.') ? e.toLowerCase() : `.${e.toLowerCase()}`))) {
+                            continue;
+                        }
+                    }
+                    
+                    // Lecture et vérification du contenu du fichier
+                    const content = await fs.readFile(fullPath, 'utf-8');
+                    if (searchRegex.test(content)) {
+                        results.push(fullPath);
+                    }
+                } else if (entry.isDirectory()) {
                     await search(fullPath);
                 }
             } catch (error) {
-                // On ignore les chemins invalides pendant la recherche
+                // On ignore les fichiers qui ne peuvent pas être lus ou les chemins invalides
                 continue;
             }
         }
@@ -80,18 +91,18 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
     // Schéma de validation pour les arguments
     const ClientArgsSchema = z.object({
         path: z.string(),
-        pattern: z.string(),
-        excludePatterns: z.array(z.string()).optional().default([])
+        regex: z.string(),
+        excludePatterns: z.array(z.string()).optional().default([]),
+        fileExtensions: z.array(z.string()).optional().default([])
     });
 
     // Ajout de l'outil au serveur
     server.addTool({
         name: ToolName,
-        description: "Recursively search for files and directories matching a pattern. " +
-          "Searches through all subdirectories from the starting path. The search " +
-          "is case-insensitive and matches partial names. Returns full paths to all " +
-          "matching items. Great for finding files when you don't know their exact location. " +
-          "Only searches within allowed directories.",
+        description: "Search for files whose content matches a regular expression pattern. " +
+          "Recursively searches through all text files in subdirectories from the starting path. " +
+          "Returns full paths to all files containing matches. " +
+          "Only searches within allowed directories and readable text files.",
         parameters: ClientArgsSchema,
         execute: async (args, context) => {
             return logger.withOperationContext(async () => {
@@ -102,16 +113,20 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                     const validRootPath = config.validatePath(args.path);
                     
                     // Exécution de la recherche
-                    const results = await searchFiles(validRootPath, args.pattern, args.excludePatterns, config);
+                    const results = await searchFileContent(validRootPath, args.regex, args.excludePatterns, args.fileExtensions, config);
 
-                    logger.info(`Recherche terminée avec succès. ${results.length} résultats trouvés.`);
                     
-                    return results.length > 0 
-                        ? results.join("\n")
-                        : "Aucun résultat trouvé";
+                    
+                    const text_result = results.length > 0 
+                    ? results.join("\n")
+                    : "Aucun fichier trouvé contenant l'expression recherchée";
+
+                    logger.info(`Recherche terminée avec succès. ${results.length} fichiers trouvés.\n${text_result}`);
+
+                    return text_result;
 
                 } catch (error) {
-                    logger.error(`Erreur lors de la recherche de fichiers:`, error);
+                    logger.error(`Erreur lors de la recherche dans le contenu des fichiers:`, error);
                     throw error;
                 }
             });
