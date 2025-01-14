@@ -243,3 +243,7 @@ Le serveur utilise Winston pour un logging avancé avec :
 - Validation stricte des chemins de fichiers
 - Liste blanche de répertoires accessibles
 - Pas d'exécution de code arbitraire
+
+## Licence
+
+Ce projet est sous licence Apache 2.0 - voir le fichier [LICENSE](LICENSE) pour plus de détails.
