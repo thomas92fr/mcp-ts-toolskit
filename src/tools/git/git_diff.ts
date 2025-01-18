@@ -100,9 +100,11 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
             .describe("Number of context lines around the differences (translates to -U option in git diff command)"),
         ignoreSpace: z.boolean()
             .optional()
+            .default(true)
             .describe("Whether to ignore whitespace changes in the diff (--ignore-space-change)"),
         ignoreBlankLines: z.boolean()
             .optional()
+            .default(true)
             .describe("Whether to ignore changes that are empty lines only (--ignore-blank-lines)")
     });
 
