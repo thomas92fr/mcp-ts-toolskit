@@ -22,6 +22,7 @@ async function executeGitDiff(
         files?: string[];
         unified?: number;
         ignoreSpace?: boolean;
+        ignoreBlankLines?: boolean;
     } = {},
     logger: ExtendedLogger
 ): Promise<GitOperationResult> {
@@ -40,6 +41,10 @@ async function executeGitDiff(
 
         if (options.ignoreSpace) {
             diffOptions.unshift('--ignore-space-change');
+        }
+
+        if (options.ignoreBlankLines) {
+            diffOptions.unshift('--ignore-blank-lines');
         }
 
         if (options.files && options.files.length > 0) {
@@ -92,10 +97,13 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
         unified: z.number()
             .min(0)
             .optional()
-            .describe("Number of context lines around the differences (e.g. -U3)"),
+            .describe("Number of context lines around the differences (translates to -U option in git diff command)"),
         ignoreSpace: z.boolean()
             .optional()
-            .describe("Whether to ignore whitespace changes in the diff")
+            .describe("Whether to ignore whitespace changes in the diff (--ignore-space-change)"),
+        ignoreBlankLines: z.boolean()
+            .optional()
+            .describe("Whether to ignore changes that are empty lines only (--ignore-blank-lines)")
     });
 
     // Add tool to server
@@ -103,7 +111,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
         name: ToolName,
         description: "Returns the diff between two commits in a git repository. " +
                     "Supports filtering by specific files, setting context lines (unified), " +
-                    "and ignoring whitespace changes. " +
+                    "and ignoring whitespace or blank line changes. " +
                     "Only works within allowed directories.",
         parameters: ClientArgsSchema,
         execute: async (args, context) => {
@@ -122,7 +130,8 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         {
                             files: args.files,
                             unified: args.unified,
-                            ignoreSpace: args.ignoreSpace
+                            ignoreSpace: args.ignoreSpace,
+                            ignoreBlankLines: args.ignoreBlankLines
                         },
                         logger
                     );
