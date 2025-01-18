@@ -6,3 +6,5 @@ export * as GitStatus from './git_status.js';
 export * as GitResolveConflicts from './git_resolve_conflicts.js';
 export * as GitCheckout from './git_checkout.js';
 export * as GitFetch from './git_fetch.js';
+export * as GitDiff from './git_diff.js';
+export * as GitLog from './git_log.js';
