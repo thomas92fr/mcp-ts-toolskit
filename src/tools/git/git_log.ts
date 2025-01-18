@@ -70,12 +70,24 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schema for input parameters
     const ClientArgsSchema = z.object({
-        workingDir: z.string(),
-        maxCount: z.number().positive().optional(),
-        branch: z.string().optional(),
-        file: z.string().optional(),
-        from: z.string().optional(),
-        to: z.string().optional()
+        workingDir: z.string()
+            .describe("Directory of the git repository to analyze"),
+        maxCount: z.number()
+            .positive()
+            .optional()
+            .describe("Maximum number of commits to return"),
+        branch: z.string()
+            .optional()
+            .describe("Specific branch to get history from"),
+        file: z.string()
+            .optional()
+            .describe("Get history for a specific file"),
+        from: z.string()
+            .optional()
+            .describe("Starting commit hash for the history range"),
+        to: z.string()
+            .optional()
+            .describe("Ending commit hash for the history range")
     });
 
     // Add tool to server

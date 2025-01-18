@@ -80,12 +80,22 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schema for input parameters
     const ClientArgsSchema = z.object({
-        workingDir: z.string(),
-        fromCommit: z.string(),
-        toCommit: z.string(),
-        files: z.array(z.string()).optional(),
-        unified: z.number().min(0).optional(),
-        ignoreSpace: z.boolean().optional()
+        workingDir: z.string()
+            .describe("Directory of the git repository to analyze"),
+        fromCommit: z.string()
+            .describe("Initial commit hash to compare from"),
+        toCommit: z.string()
+            .describe("Target commit hash to compare to"),
+        files: z.array(z.string())
+            .optional()
+            .describe("Optional list of specific files to check for differences"),
+        unified: z.number()
+            .min(0)
+            .optional()
+            .describe("Number of context lines around the differences (e.g. -U3)"),
+        ignoreSpace: z.boolean()
+            .optional()
+            .describe("Whether to ignore whitespace changes in the diff")
     });
 
     // Add tool to server
