@@ -10,6 +10,7 @@ import * as Npm from "./tools/npm/index.js";
 import * as DotNet from "./tools/dotnet/index.js";
 import * as System from "./tools/system/index.js";
 import * as Git from "./tools/git/index.js";
+import * as Ressources from "./resources/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
@@ -107,6 +108,8 @@ try {
     Git.GitCheckout.Add_Tool(server, config, logger);
     Git.GitFetch.Add_Tool(server, config, logger);
 
+
+    Ressources.GetLogs.Add_Ressource(server, config, logger);
     //démarrage du serveur MCP sur stdio
     server.start({
         transportType: "stdio",

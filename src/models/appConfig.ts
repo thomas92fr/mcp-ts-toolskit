@@ -75,6 +75,11 @@ export interface IAppConfig {
      * Configuration spécifique pour GIT
      */
     Git: IGitConfig;
+
+    /**
+     * Nombre de lignes de logs à afficher dans la ressource logs
+     */
+    LogsNumberToShow: number;
 }
 
 /**
@@ -96,6 +101,7 @@ export class AppConfig implements IAppConfig {
     Pandoc: IPandocConfig = {
        PandocPath: ''
     };
+    LogsNumberToShow:number = 50;
 
     /**
      * Convertit les chemins relatifs en chemins absolus par rapport au répertoire de l'application
