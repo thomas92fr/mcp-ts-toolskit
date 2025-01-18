@@ -107,7 +107,8 @@ try {
     Git.GitStatus.Add_Tool(server, config, logger);
     Git.GitCheckout.Add_Tool(server, config, logger);
     Git.GitFetch.Add_Tool(server, config, logger);
-
+    Git.GitDiff.Add_Tool(server, config, logger);
+    Git.GitLog.Add_Tool(server, config, logger);
 
     Ressources.GetLogs.Add_Ressource(server, config, logger);
     //démarrage du serveur MCP sur stdio
