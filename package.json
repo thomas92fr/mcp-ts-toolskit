@@ -1,8 +1,8 @@
-{  
+{
   "name": "@thomas92fr/mcp-ts-toolskit",
   "version": "1.1.0",
   "description": "MCP server toolskit",
-  "license": "MIT", 
+  "license": "MIT",
   "author": "Thomas DEVIN",
   "homepage": "https://github.com/thomas92fr/mcp-ts-toolskit",
   "bugs": "https://github.com/thomas92fr/mcp-ts-toolskit/issues",
@@ -14,9 +14,11 @@
     "build"
   ],
   "scripts": {
-    "build": "tsc && shx chmod +x build/*.js",
+    "compile": "tsc && shx chmod +x build/*.js",
+    "build": "npm run compile && webpack --config webpack.config.js",
     "prepare": "npm run build",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "inspector": "npm run build && npx @modelcontextprotocol/inspector dist/bundle.js"
   },
   "dependencies": {
     "diff": "^5.1.0",
@@ -24,10 +26,10 @@
     "glob": "^10.3.10",
     "minimatch": "^10.0.1",
     "puppeteer": "^24.0.0",
+    "simple-git": "^3.22.0",
     "uuid": "^11.0.5",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "simple-git": "^3.22.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -35,6 +37,8 @@
     "@types/minimatch": "^5.1.2",
     "@types/node": "^22",
     "shx": "^0.3.4",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
   }
 }
