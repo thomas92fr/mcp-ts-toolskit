@@ -14,7 +14,7 @@ import * as Ressources from "./resources/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
-const SERVER_VERSION = `1.1.0`;
+const SERVER_VERSION = `1.2.0`;
 
 let tmplogger : ExtendedLogger | null = null;
 try {
