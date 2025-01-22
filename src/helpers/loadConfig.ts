@@ -55,13 +55,13 @@ export async function loadConfig(base_path: string): Promise<AppConfig|null> {
             "Configuration file not found. Please provide it through:\n" +
             "1. Command line argument\n" +
             "2. MCP_TOOLSKIT_CONFIG_PATH environment variable\n" +
-            "3. config.json file next to the executable"
+            `3. config.json file next to the executable in folder: '${base_path}'`
         );
     }
    
     // Charger et parser le fichier de configuration 
     let config = await AppConfig.loadFromFile(configPath);
-    config.BasePath = base_path;
+    config.BasePath = path.dirname(configPath); ;
     return config;
    
 }
