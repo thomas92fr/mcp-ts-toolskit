@@ -16,7 +16,10 @@ Sur Windows : `%APPDATA%/Claude/claude_desktop_config.json`
   "mcpServers": {
     "toolskit": {
       "command": "node",
-      "args": ["/chemin/vers/toolskit/build/index.js"]     
+      "args": ["/chemin/vers/toolskit/build/index.js"],
+      "env": {
+        "MCP_TOOLSKIT_CONFIG_PATH": "C:/tmp/config.json"
+      }     
     }
   }
 }
