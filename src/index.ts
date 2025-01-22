@@ -20,11 +20,10 @@ let tmplogger : ExtendedLogger | null = null;
 try {
     
     //on récupere l'emplacement du index.js 
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
+    const basePath = process.cwd();
     
     // Charger la configuration
-    const config = await loadConfig(__dirname);    
+    const config = await loadConfig(basePath);    
     // Vérification de type pour rassurer TypeScript
     if (!config) {
         throw new Error('config initialization failed');

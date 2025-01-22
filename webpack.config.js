@@ -10,6 +10,16 @@ export default {
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
+    clean: true
   },
-  // Additional configuration goes here
+  mode: 'production',
+  resolve: {
+    extensions: ['.js', '.ts']
+  },
+  optimization: {
+    minimize: true
+  },
+  experiments: {
+    topLevelAwait: true
+  }
 };

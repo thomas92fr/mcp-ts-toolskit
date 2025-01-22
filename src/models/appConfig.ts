@@ -52,7 +52,7 @@ export interface IBraveSearchConfig {
  */
 export interface IAppConfig {
     /**
-     * Chemin du programme
+     * Dossier du fichier de configuration
      */
     BasePath: string;
 

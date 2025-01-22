@@ -18,7 +18,7 @@
     "build": "npm run compile && webpack --config webpack.config.js",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "inspector": "npm run build && npx @modelcontextprotocol/inspector dist/bundle.js"
+    "inspector": "npm run build && npx @modelcontextprotocol/inspector build/index.js"
   },
   "dependencies": {
     "diff": "^5.1.0",
