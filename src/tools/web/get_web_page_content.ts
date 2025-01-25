@@ -58,7 +58,12 @@ async function getChromePath(): Promise<string> {
 }
 
 async function initBrowser(logger: ExtendedLogger): Promise<void> {
-    if (!browser) {
+  if (browser && !browser.connected) {
+    logger.debug(`le navigateur n'est plus connecté`);
+     browser = null;
+   }
+  
+  if (!browser) {
         logger.debug('Initialisation du navigateur');
         browser = await puppeteer.launch({
             headless: false,
@@ -79,7 +84,12 @@ async function getPageContent(
 
     const page = await browser.newPage();
     try {
+        const width = 1280 ;
+        const height = 720;
+        await page.setViewport({ width, height });
         await page.goto(url, { waitUntil: 'networkidle0' });
+        
+
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         const result = await page.evaluate(`
@@ -123,12 +133,12 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
     if (!config.validateTool(ToolName)) return;
 
     const ClientArgsSchema = z.object({
-        url: z.string().url().describe("URL de la page web à récupérer")
+        url: z.string().url().describe("URL of the web page to retrieve")
     });
 
     server.addTool({
         name: ToolName,
-        description: "Récupère le contenu HTML complet d'une page web en utilisant Puppeteer.",
+        description: "Retrieve the complete HTML content of a web page using Puppeteer.' which means navigating to a URL and retrieving the text of the web page.",
         parameters: ClientArgsSchema,
         execute: async (args, context) => {
             return logger.withOperationContext(async () => {
