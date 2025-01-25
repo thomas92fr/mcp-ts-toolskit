@@ -253,6 +253,15 @@ Effectue une recherche web via l'API Brave Search.
   - Description
   - URL
 
+#### get_web_page_content
+Récupère le contenu d'une page web en utilisant Puppeteer.
+- Paramètres requis :
+  - url : URL de la page web à récupérer
+- Retourne :
+  - Contenu HTML simplifié de la page
+  - Supprime les balises script, style, iframe et img
+  - Conserve le texte et les liens
+
 ### Pandoc
 
 #### markdown_to_document
