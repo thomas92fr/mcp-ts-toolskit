@@ -83,6 +83,7 @@ try {
 
     //ajout des outils web
     Web.BraveSearch.Add_Tool(server, config, logger);
+    Web.GetWebPageContent.Add_Tool(server, config, logger);
 
     //ajout des outils pandoc
     Pandoc.MarkdownToDocument.Add_Tool(server, config, logger);
