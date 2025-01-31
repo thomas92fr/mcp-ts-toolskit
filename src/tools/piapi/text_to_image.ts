@@ -184,7 +184,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         logger
                     );
 
-                    logger.info(`Génération d'image terminée avec succès`);
+                    logger.info(`Génération d'image terminée avec succès, URL de l'image: ${imageUrl}`);
                     // Télécharger l'image
                     const imageResponse = await fetch(imageUrl);
                     if (!imageResponse.ok) {
@@ -199,11 +199,13 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                     return {
                         content: [
                             { type: "text", text: `URL de l'image: ${imageUrl}` },
-                            {
-                                type: "image",
-                                data: base64Image,
-                                mimeType: imageResponse.headers.get('content-type') || 'image/png'
-                            }
+                            base64Image.length > 98500 //comme Claude plante si la réponse fait plus de 100 000 car. : on indique juste l'URL si le Base64 de l'image est trop long
+                                ? { type: "text", text: `Image trop volumineuse. Téléchargez l'image directement via l'URL.` }
+                                : {
+                                    type: "image",
+                                    data: base64Image,
+                                    mimeType: imageResponse.headers.get('content-type') || 'image/png'
+                                }
                         ]
                     };
                 } catch (error) {
