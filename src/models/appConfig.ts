@@ -48,6 +48,22 @@ export interface IBraveSearchConfig {
 }
 
 /**
+ * Configuration spécifique pour BraveSearch API
+ */
+export interface IPiAPI {
+    /**
+     * Token a utiliser pour les appels a l'API PiAPI
+     */
+    ApiKey: string;
+
+    /**
+     * Indique si on ignore ou non les erreurs SSL lors des appels a l'API PiAPI
+     */
+    IgnoreSSLErrors: boolean;
+}
+
+
+/**
  * Interface de configuration de l'application
  */
 export interface IAppConfig {
@@ -72,6 +88,11 @@ export interface IAppConfig {
     BraveSearch: IBraveSearchConfig;
 
     /**
+     * Configuration spécifique pour PiAPI
+     */
+    PiAPI: IPiAPI;
+
+    /**
      * Configuration spécifique pour GIT
      */
     Git: IGitConfig;
@@ -90,6 +111,10 @@ export class AppConfig implements IAppConfig {
     AllowedDirectories: string[] = [];
     ForbiddenTools: string[] = [];
     BraveSearch: IBraveSearchConfig = {
+        ApiKey: '',
+        IgnoreSSLErrors: false
+    };
+    PiAPI: IPiAPI = {
         ApiKey: '',
         IgnoreSSLErrors: false
     };
