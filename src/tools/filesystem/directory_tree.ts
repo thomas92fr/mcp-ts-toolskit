@@ -4,6 +4,7 @@ import { AppConfig } from "../../models/appConfig.js";
 import fs from "fs/promises";
 import path from "path";
 import { ExtendedLogger } from "../../helpers/logger.js";
+import { stringify } from 'yaml'
 
 export const ToolName: string = `directory_tree`;
 
@@ -73,7 +74,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
     // Ajout de l'outil au serveur
     server.addTool({
         name: ToolName,
-        description: "Get a recursive tree view of files and directories as a JSON structure. " +
+        description: "Get a recursive tree view of files and directories as a YAML structure. " +
             "Each entry includes 'name', 'type' (file/directory), and 'children' for directories. " +
             "Files have no children array, while directories always have a children array (which may be empty). " +
             "The output is formatted with 2-space indentation for readability. Only works within allowed directories.",
@@ -84,7 +85,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                 
                 const treeData = await buildTree(args.path);
                 logger.info(`Analyse de l'arborescence terminée avec succès`);
-                return JSON.stringify(treeData, null, 2);
+                return stringify(treeData);
                
             });
         },
