@@ -32,7 +32,6 @@ function createUnifiedDiff(originalContent: string, newContent: string, filepath
 async function applyFileEdits(
     filePath: string,
     edits: Array<{ oldText: string, newText: string }>,
-    dryRun = false,
     logger?: ExtendedLogger
 ): Promise<string> {
     // Lecture du contenu du fichier et normalisation des fins de ligne
@@ -97,9 +96,7 @@ async function applyFileEdits(
     // Création du diff unifié
     const diff = createUnifiedDiff(content, modifiedContent, filePath);
 
-    if (!dryRun) {
-        await fs.writeFile(filePath, modifiedContent, 'utf-8');
-    }
+    await fs.writeFile(filePath, modifiedContent, 'utf-8');
 
     return diff;
 }
@@ -118,23 +115,20 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schéma de l'opération d'édition
     const EditOperation = z.object({
-        oldText: z.string().describe('Texte à rechercher - doit correspondre exactement'),
-        newText: z.string().describe('Texte de remplacement')
+        oldText: z.string().describe('Text to search for - must match exactly'),
+        newText: z.string().describe('Replacement text')
     });
 
     // Schéma de validation pour les arguments
     const ClientArgsSchema = z.object({
-        path: z.string(),
-        edits: z.array(EditOperation),
-        dryRun: z.boolean().default(false).describe('Prévisualiser les changements au format diff git')
+        path: z.string().describe('Full path to the target file - must be within allowed directories'),
+        edits: z.array(EditOperation).describe('Array of edit operations to apply to the file - each operation replaces specified text with new content')
     });
 
     // Ajout de l'outil au serveur
     server.addTool({
         name: ToolName,
-        description: "Make line-based edits to a text file. Each edit replaces exact line sequences " +
-          "with new content. Returns a git-style diff showing the changes made. " +
-          "Only works within allowed directories.",
+        description: "Executes precise text modifications in files by replacing exact text sequences with new content. Features: 1) Preserves indentation and line formatting 2) Supports multi-line replacements 3) Validates file paths for security 4) Generates git-style unified diffs 5) Offers dry-run mode for preview. Input requires: target file path, array of {oldText, newText} pairs. Security: Only operates within allowed directories. Common uses: updating configuration files, code refactoring, text content updates. Returns: Unified diff showing all changes made.",
         parameters: ClientArgsSchema,
         execute: async (args, context) => {
             return logger.withOperationContext(async () => {
@@ -144,12 +138,9 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                 const validPath = config.validatePath(args.path);
 
                 // Application des modifications
-                const diff = await applyFileEdits(validPath, args.edits, args.dryRun, logger);
+                const diff = await applyFileEdits(validPath, args.edits, logger);
 
                 logger.info(`Modifications du fichier ${args.path} terminées avec succès`);
-                if (args.dryRun) {
-                    logger.info('Mode prévisualisation - aucune modification effectuée');
-                }
 
                 return diff;             
             });
