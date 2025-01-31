@@ -62,6 +62,7 @@ Ce serveur fournit plusieurs catégories d'outils :
 
 ### Outils .NET
 - Exécuter des opérations sur les solutions .NET (tests unitaires, rapports)
+- Analyser et sérialiser des fichiers source C#
 
 ## Installation
 
@@ -149,14 +150,19 @@ Crée un nouveau répertoire (et ses parents si nécessaire).
   - path : Chemin du répertoire à créer
 
 #### edit_file
-Modifie un fichier texte ligne par ligne avec diff.
+Exécute des modifications précises dans les fichiers en remplaçant des séquences exactes de texte par du nouveau contenu.
 - Paramètres requis :
-  - path : Chemin du fichier
-  - edits : Tableau des modifications :
-    - oldText : Texte à remplacer
-    - newText : Nouveau texte
-- Paramètres optionnels :
-  - dryRun : Pour prévisualiser les changements
+  - path : Chemin complet du fichier cible (doit être dans les répertoires autorisés)
+  - edits : Tableau des opérations de modification :
+    - oldText : Texte exact à rechercher
+    - newText : Texte de remplacement
+
+Caractéristiques :
+- Préserve l'indentation et le formatage des lignes
+- Supporte les remplacements multi-lignes
+- Valide les chemins de fichiers pour la sécurité
+- Génère un diff unifié style git
+- Fonctionne uniquement dans les répertoires autorisés
 
 #### write_file
 Crée ou écrase un fichier avec du nouveau contenu.
@@ -304,6 +310,26 @@ Exécute des opérations sur une solution .NET.
 - Validation :
   - Vérifie l'existence de la solution
   - Vérifie la présence du SDK .NET
+
+#### serialize_csharp
+Analyse et sérialise les fichiers source C# dans un répertoire.
+- Paramètres requis :
+  - path : Chemin du répertoire contenant les fichiers C# à analyser
+- Paramètres optionnels :
+  - options :
+    - accessibility : Configuration des niveaux d'accessibilité à inclure
+      - public : Inclure les méthodes publiques (défaut: true)
+      - private : Inclure les méthodes privées (défaut: false)
+      - protected : Inclure les méthodes protégées (défaut: false)
+      - internal : Inclure les méthodes internal (défaut: false)
+      - privateProtected : Inclure les méthodes private protected (défaut: false)
+      - protectedInternal : Inclure les méthodes protected internal (défaut: false)
+    - includeStatic : Inclure les méthodes statiques (défaut: true)
+    - namespaceFilter : Liste des namespaces à inclure (si vide, tous les namespaces sont inclus)
+- Retourne :
+  - Analyse détaillée des using directives
+  - Signatures des méthodes
+  - Informations d'accessibilité
 
 ### Logging et Diagnostics
 
