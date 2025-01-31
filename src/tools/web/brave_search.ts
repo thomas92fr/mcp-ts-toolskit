@@ -125,7 +125,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
     "Supports pagination, content filtering, and freshness controls. " +
     "Maximum 20 results per request, with offset for pagination. ",
         parameters: ClientArgsSchema,
-        execute: async (args, context) => {
+        execute: async (args) => {
             return logger.withOperationContext(async () => {
                 logger.info(`Appel de l'outil '${ToolName}':`, args);
 

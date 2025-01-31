@@ -11,6 +11,7 @@ import * as DotNet from "./tools/dotnet/index.js";
 import * as System from "./tools/system/index.js";
 import * as Git from "./tools/git/index.js";
 import * as Ressources from "./resources/index.js";
+import * as PiAPI from "./tools/piapi/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
@@ -110,6 +111,10 @@ try {
     Git.GitFetch.Add_Tool(server, config, logger);
     Git.GitDiff.Add_Tool(server, config, logger);
     Git.GitLog.Add_Tool(server, config, logger);
+
+    //ajout des outils PiAPI
+    PiAPI.TextToImage.Add_Tool(server, config, logger);
+
 
     Ressources.GetLogs.Add_Ressource(server, config, logger);
     //démarrage du serveur MCP sur stdio
