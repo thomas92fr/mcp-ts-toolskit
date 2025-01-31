@@ -186,7 +186,7 @@ export async function analyzeDirectory(directory: string, options: AnalyzerOptio
     return results;
 }
 
-export function serializeToCompactString(fileInfo: CSharpFileInfo): string {
+export function serializeToCompactString(fileInfo: CSharpFileInfo, basePath: string = ''): string {
     const accessMap: { [key: string]: string } = {
         'public': 'pub',
         'private': 'prv',
@@ -197,7 +197,13 @@ export function serializeToCompactString(fileInfo: CSharpFileInfo): string {
         'static': 'st'
     };
 
-    const fileName = fileInfo.filePath.split(/[\/\\]/).pop() || fileInfo.filePath;
+    // Rendre le chemin relatif par rapport au basePath
+    let relativePath = fileInfo.filePath;
+    if (basePath && fileInfo.filePath.startsWith(basePath)) {
+        relativePath = fileInfo.filePath.substring(basePath.length).replace(/^[\/\\]/, '');
+    }
+    // Si on veut seulement le nom du fichier, décommenter la ligne suivante
+    // relativePath = relativePath.split(/[\/\\]/).pop() || relativePath;
     const usings = fileInfo.usings.join(',');
     const methods = fileInfo.methods.map(m => {
         const acc = accessMap[m.accessibility] || m.accessibility;
@@ -223,7 +229,7 @@ export function serializeToCompactString(fileInfo: CSharpFileInfo): string {
         return `${acc} ${ret} ${m.name}(${params})`;
     }).join('|');
 
-    return `${fileName};${usings};${methods}`;
+    return `${relativePath};${usings};${methods}`;
 }
 
 export function deserializeFromCompactString(serialized: string): string {

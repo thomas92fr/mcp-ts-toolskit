@@ -13,7 +13,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
     // Schéma de validation pour les arguments
     const ClientArgsSchema = z.object({
         // Chemin du répertoire contenant les fichiers C# à analyser
-        path: z.string().describe("Chemin du répertoire contenant les fichiers C# à analyser"),
+        path: z.string().describe("Path to the directory containing C# files to analyze"),
         
         // Options de configuration pour l'analyse
         options: z.object({
@@ -22,55 +22,55 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                 // Inclure les méthodes publiques
                 public: z.boolean()
                     .default(true)
-                    .describe("Inclure les méthodes publiques dans l'analyse"),
+                    .describe("Include public methods in the analysis"),
                 
                 // Inclure les méthodes privées
                 private: z.boolean()
                     .default(false)
-                    .describe("Inclure les méthodes privées dans l'analyse"),
+                    .describe("Include private methods in the analysis"),
                 
                 // Inclure les méthodes protégées
                 protected: z.boolean()
                     .default(false)
-                    .describe("Inclure les méthodes protégées dans l'analyse"),
+                    .describe("Include protected methods in the analysis"),
                 
                 // Inclure les méthodes internal
                 internal: z.boolean()
                     .default(false)
-                    .describe("Inclure les méthodes internal dans l'analyse"),
+                    .describe("Include internal methods in the analysis"),
                 
                 // Inclure les méthodes protected internal
                 protectedInternal: z.boolean()
                     .default(false)
-                    .describe("Inclure les méthodes protected internal dans l'analyse"),
+                    .describe("Include protected internal methods in the analysis"),
                 
                 // Inclure les méthodes private protected
                 privateProtected: z.boolean()
                     .default(false)
-                    .describe("Inclure les méthodes private protected dans l'analyse")
+                    .describe("Include private protected methods in the analysis")
             })
             .default({})
-            .describe("Configuration des niveaux d'accessibilité à inclure dans l'analyse"),
+            .describe("Configuration of accessibility levels to include in the analysis"),
             
             // Inclure les méthodes statiques dans l'analyse
             includeStatic: z.boolean()
                 .default(true)
-                .describe("Inclure les méthodes statiques dans l'analyse"),
+                .describe("Include static methods in the analysis"),
             
             // Filtrer les directives using par namespace
             namespaceFilter: z.array(z.string())
                 .default([])
-                .describe("Liste des namespaces à inclure dans l'analyse. Si vide, tous les namespaces sont inclus. Ex: ['System', 'Microsoft.Extensions']")
+                .describe("List of namespaces to include in the analysis. If empty, all namespaces are included. Ex: ['System', 'Microsoft.Extensions']")
         })
         .default({})
-        .describe("Options de configuration pour l'analyse des fichiers C#")
+        .describe("Configuration options for C# files analysis")
     });
 
     // Ajout de l'outil au serveur
     server.addTool({
         name: ToolName,
-        description: "Analyze and serialize C# source files in a directory. Returns a detailed analysis of " +
-            "using directives, method signatures, and their accessibility. Can filter by access modifiers " +
+        description: "Analyze and serialize C# source files in a directory to understand C# project structure. Returns a detailed analysis of " +
+            "using directives, method signatures, and their accessibility, helping to map out the architecture and dependencies. Can filter by access modifiers " +
             "and namespaces. Only works within allowed directories.",
         parameters: ClientArgsSchema,
         execute: async (args, context) => {
@@ -85,7 +85,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                     const results = await analyzeDirectory(validPath, args.options);
                     
                     // Conversion des résultats en format compact
-                    const serializedResults = results.map(fileInfo => serializeToCompactString(fileInfo)).join('\n');
+                    const serializedResults = results.map(fileInfo => serializeToCompactString(fileInfo, validPath)).join('\n');
 
                     // Combine la documentation et les résultats sérialisés
                     return `${SERIALIZATION_FORMAT_DOC}\n\nRésultats sérialisés :\n${serializedResults}`;
