@@ -4,7 +4,10 @@ import { AppConfig } from "../../models/appConfig.js";
 import { ExtendedLogger } from "../../helpers/logger.js";
 import { ApiCallParams, Model, TaskType, ApiResponse } from "./types/types.js";
 import { stringify } from 'yaml';
+import fs from 'fs';
+import path from 'path';
 import { checkTaskStatus } from './get_task_status.js';
+import open from 'open';
 
 export const ToolName: string = `piapi_text_to_image`;
 
@@ -31,7 +34,7 @@ async function generateImage(
     ignoreSSLErrors: boolean,
     logger: ExtendedLogger
 ): Promise<string> {
-    logger.debug(`Génération d'image`, { prompt, width, height, model });
+    logger.info(`Génération d'image`, { prompt, width, height, model });
 
     const url = 'https://api.piapi.ai/api/v1/task';
 
@@ -59,7 +62,7 @@ async function generateImage(
 
     // Ajout des options SSL si nécessaire
     if (ignoreSSLErrors) {
-        logger.debug('SSL verification disabled');
+        logger.info('SSL verification disabled');
         Object.assign(fetchOptions, {
             agent: new (await import('node:https')).Agent({
                 rejectUnauthorized: false
@@ -85,7 +88,7 @@ async function generateImage(
     }
 
     const taskId = result.data.task_id;
-    logger.debug(`Tâche créée, attente du résultat...\n${stringify(result.data)}`, { taskId });
+    logger.info(`Tâche créée, attente du résultat...\n${stringify(result.data)}`, { taskId });
 
     // Attendre la complétion de la tâche
     const taskResult = await checkTaskStatus(taskId, apiKey, logger);
@@ -151,29 +154,57 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         logger
                     );
                     
-                    // Télécharger l'image
-                    const imageResponse = await fetch(imageUrl);
-                    if (!imageResponse.ok) {
-                        throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+                    let contents: { type: "text", text: string }[] = [
+                        { type: "text" as const, text: `URL de l'image: ${imageUrl}` }
+                    ];
+
+                    // Si OutputDirectory est spécifié, télécharger et sauvegarder l'image
+                    if (config.PiAPI.OuputDirectory) {
+                        const outputDir = config.PiAPI.OuputDirectory;
+                        
+                        // Créer le dossier de sortie s'il n'existe pas
+                        if (!fs.existsSync(outputDir)) {
+                            fs.mkdirSync(outputDir, { recursive: true });
+                        }
+
+                        // Extraire l'extension à partir de l'URL
+                        const urlParts = imageUrl.split('/');
+                        const fileName = urlParts[urlParts.length - 1];
+                        const outputPath = path.join(outputDir, fileName);
+
+                        // Télécharger l'image
+                        const imageResponse = await fetch(imageUrl);
+                        if (!imageResponse.ok) {
+                            throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+                        }
+
+                        // Sauvegarder l'image
+                        const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+                        await fs.promises.writeFile(outputPath, imageBuffer);
+
+                        // Ajouter le chemin de l'image sauvegardée à la réponse
+                        contents.push({ 
+                            type: "text" as const, 
+                            text: `Image sauvegardée: ${outputPath}` 
+                        });
+
+                        // Ouvrir l'image avec l'application par défaut
+                        try {
+                            await open(outputPath);
+                            contents.push({
+                                type: "text" as const,
+                                text: `Image ouverte avec l'application par défaut`
+                            });
+                        } catch (error) {
+                            logger.warn(`Impossible d'ouvrir l'image avec l'application par défaut:`, error);
+                            contents.push({
+                                type: "text" as const,
+                                text: `Note: Impossible d'ouvrir l'image automatiquement`
+                            });
+                        }
                     }
 
-                    // Récupérer l'image sous forme de buffer
-                    const imageBuffer = await imageResponse.arrayBuffer();
-
-                    // Retourner l'image au format attendu par MCP
-                    const base64Image = Buffer.from(imageBuffer).toString('base64');
-                    return {
-                        content: [
-                            { type: "text", text: `URL de l'image: ${imageUrl}` },
-                            base64Image.length > 98500 //comme Claude plante si la réponse fait plus de 100 000 car. : on indique juste l'URL si le Base64 de l'image est trop long
-                                ? { type: "text", text: `Image trop volumineuse. Téléchargez l'image directement via l'URL.` }
-                                : {
-                                    type: "image",
-                                    data: base64Image,
-                                    mimeType: imageResponse.headers.get('content-type') || 'image/png'
-                                }
-                        ]
-                    };
+                    return { content: contents };
                 } catch (error) {
                     logger.error(`Erreur lors de la génération d'image:`, error);
                     throw error;

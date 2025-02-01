@@ -37,11 +37,11 @@ export async function checkTaskStatus(
        
         // Conversion du status en majuscules pour correspondre à l'enum
         const status = statusResult.data.status.charAt(0).toUpperCase() + statusResult.data.status.slice(1).toLowerCase() as Status;
-        logger.debug(`État de la tâche:`, { status });
+        logger.info(`État de la tâche:`, { status });
 
         switch(status) {
             case Status.Completed:
-                logger.debug(`Tâche complétée avec succès\n${stringify(statusResult.data)}`);
+                logger.info(`Tâche complétée avec succès\n${stringify(statusResult.data)}`);
                 return statusResult;
             
             case Status.Failed:

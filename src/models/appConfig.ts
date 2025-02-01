@@ -60,6 +60,11 @@ export interface IPiAPI {
      * Indique si on ignore ou non les erreurs SSL lors des appels a l'API PiAPI
      */
     IgnoreSSLErrors: boolean;
+
+    /**
+     * Dossier dans lequel seront déposé les fichiers créés avec les outils PiAPI
+     */
+    OuputDirectory: string;
 }
 
 
@@ -116,7 +121,8 @@ export class AppConfig implements IAppConfig {
     };
     PiAPI: IPiAPI = {
         ApiKey: '',
-        IgnoreSSLErrors: false
+        IgnoreSSLErrors: false,
+        OuputDirectory: ''
     };
     Git: IGitConfig = {
         UserName: '',
@@ -137,10 +143,20 @@ export class AppConfig implements IAppConfig {
             this.BasePath = path.resolve(this.BasePath);
         }
 
+        if (this.PiAPI.OuputDirectory) {
+            this.PiAPI.OuputDirectory = path.resolve(this.PiAPI.OuputDirectory);
+        }
+
         // Normalise les chemins des répertoires autorisés
         if (this.AllowedDirectories) {
-            this.AllowedDirectories = this.AllowedDirectories.map(dir => 
-                path.resolve(dir));
+           
+            this.AllowedDirectories = this.AllowedDirectories.map(dir => path.resolve(dir));
+
+            if (this.PiAPI.OuputDirectory) {
+                if (!this.AllowedDirectories.some(dir => dir == this.PiAPI.OuputDirectory)) {
+                    this.AllowedDirectories.push(this.PiAPI.OuputDirectory);
+                }
+            }
         }
     }
 
