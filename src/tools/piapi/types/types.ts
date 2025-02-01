@@ -6,7 +6,7 @@ export interface ApiCallParams {
     input: Input;
     /**
      * the model name, can be `Qubico/flux1-dev` or `Qubico/flux1-schnell` or
-     * `Qubico/flux1-dev-advanced`
+     * `Qubico/flux1-dev-advanced` or `Qubico/trellis`
      */
     model: Model;
     task_type: TaskType;
@@ -55,7 +55,7 @@ export interface WebhookConfig {
 }
 
 /**
- * the input param of the flux task
+ * the input param for various tasks
  */
 export interface Input {
     /**
@@ -81,11 +81,35 @@ export interface Input {
      */
     lora_settings?: LoraSetting[];
     negative_prompt?: string;
-    prompt: string;
+    prompt?: string;
     /**
      * can be used in txt2img ONLY, width*height cannot exceed 1048576
      */
     width?: number;
+    /**
+     * Input image in base64 or URL format for image-to-3d task
+     */
+    image?: string;
+    /**
+     * Random seed for generation (default: 0)
+     */
+    seed?: number;
+    /**
+     * Sampling steps for SS (10-50, default: 50)
+     */
+    ss_sampling_steps?: number;
+    /**
+     * Sampling steps for SLAT (10-50, default: 50)
+     */
+    slat_sampling_steps?: number;
+    /**
+     * Guidance strength for SS (0-10, default: 7.5)
+     */
+    ss_guidance_strength?: number;
+    /**
+     * Guidance strength for SLAT (0-10, default: 3)
+     */
+    slat_guidance_strength?: number;
     [property: string]: any;
 }
 
@@ -117,12 +141,13 @@ export interface LoraSetting {
 
 /**
  * the model name, can be `Qubico/flux1-dev` or `Qubico/flux1-schnell` or
- * `Qubico/flux1-dev-advanced`
+ * `Qubico/flux1-dev-advanced` or `Qubico/trellis`
  */
 export enum Model {
     QubicoFlux1Dev = "Qubico/flux1-dev",
     QubicoFlux1DevAdvanced = "Qubico/flux1-dev-advanced",
     QubicoFlux1Schnell = "Qubico/flux1-schnell",
+    QubicoTrellis = "Qubico/trellis"
 }
 
 export enum TaskType {
@@ -134,52 +159,55 @@ export enum TaskType {
     ReduxVariation = "redux-variation",
     Txt2Img = "txt2img",
     Txt2ImgLora = "txt2img-lora",
+    ImageTo3D = "image-to-3d"
 }
 
-
-//Réponse
-
+/**
+ * Hover on the "Completed" option and you could see the explanation of all status:
+ * completed/processing/pending/failed/staged
+ */
+export enum Status {
+    Completed = "Completed",
+    Failed = "Failed",
+    Pending = "Pending",
+    Processing = "Processing",
+    Staged = "Staged"
+}
 
 export interface ApiResponse {
     code: number;
-    data: Data;
+    data: ApiResponseData;
     /**
-     * If you get non-null error message, here are some steps you chould follow:
-     * - Check our [common error
-     * message](https://climbing-adapter-afb.notion.site/Common-Error-Messages-6d108f5a8f644238b05ca50d47bbb0f4)
-     * - Retry for several times
-     * - If you have retried for more than 3 times and still not work, file a ticket on Discord
-     * and our support will be with you soon.
+     * If you get non-null error message, here are some steps you should follow:
+     * - Check our common error messages
+     * - Retry several times
+     * - If you have retried more than 3 times and it still doesn't work, file a ticket
      */
     message: string;
     [property: string]: any;
 }
 
-export interface Data {
+export interface ApiResponseData {
     detail: null;
-    error: Error;
+    error: ApiError;
     input: { [key: string]: any };
     logs: { [key: string]: any }[];
-    meta: Meta;
+    meta: ApiMeta;
     model: string;
-    output: Output;
-    /**
-     * Hover on the "Completed" option and you coult see the explaintion of all status:
-     * completed/processing/pending/failed/staged
-     */
-    status: Status;
+    output: ApiOutput;
+    status: string;
     task_id: string;
     task_type: string;
     [property: string]: any;
 }
 
-export interface Error {
+export interface ApiError {
     code?: number;
     message?: string;
     [property: string]: any;
 }
 
-export interface Meta {
+export interface ApiMeta {
     /**
      * The time when the task was submitted to us (staged and/or pending)
      */
@@ -190,22 +218,21 @@ export interface Meta {
     ended_at?: string;
     is_using_private_pool: boolean;
     /**
-     * The time when the task started processing. the time from created_at to time of started_at
-     * is time the job spent in the "staged“ stage and/or the"pending" stage if there were any.
+     * The time when the task started processing
      */
     started_at?: string;
-    usage: Usage;
+    usage: ApiUsage;
     [property: string]: any;
 }
 
-export interface Usage {
+export interface ApiUsage {
     consume: number;
     frozen: number;
     type: string;
     [property: string]: any;
 }
 
-export interface Output {
+export interface ApiOutput {
     /**
      * if the result contains only one image
      */
@@ -214,17 +241,9 @@ export interface Output {
      * if the result contains multiple images
      */
     image_urls?: string[];
+    /**
+     * URL of the generated 3D model file
+     */
+    model_url?: string;
     [property: string]: any;
-}
-
-/**
- * Hover on the "Completed" option and you coult see the explaintion of all status:
- * completed/processing/pending/failed/staged
- */
-export enum Status {
-    Completed = "Completed",
-    Failed = "Failed",
-    Pending = "Pending",
-    Processing = "Processing",
-    Staged = "Staged",
 }

@@ -115,6 +115,7 @@ try {
     //ajout des outils PiAPI
     PiAPI.TextToImage.Add_Tool(server, config, logger);
     PiAPI.GetTaskStatus.Add_Tool(server, config, logger);
+    PiAPI.ImageTo3D.Add_Tool(server, config, logger);
 
 
     Ressources.GetLogs.Add_Ressource(server, config, logger);
