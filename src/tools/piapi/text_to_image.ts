@@ -2,9 +2,9 @@ import { z } from "zod";
 import { FastMCP } from "fastmcp";
 import { AppConfig } from "../../models/appConfig.js";
 import { ExtendedLogger } from "../../helpers/logger.js";
-import { ApiCallParams, Model, TaskType, ApiResponse, Status } from "./types/types.js";
-
-
+import { ApiCallParams, Model, TaskType, ApiResponse } from "./types/types.js";
+import { stringify } from 'yaml';
+import { checkTaskStatus } from './get_task_status.js';
 
 export const ToolName: string = `piapi_text_to_image`;
 
@@ -12,11 +12,14 @@ export const ToolName: string = `piapi_text_to_image`;
  * Génère une image à partir d'un texte via l'API PiAPI.ai
  * 
  * @param prompt Description textuelle de l'image à générer
+ * @param negative_prompt Texte décrivant les éléments à éviter dans l'image
  * @param width Largeur de l'image (optionnel)
  * @param height Hauteur de l'image (optionnel)
+ * @param model Modèle à utiliser pour la génération
  * @param apiKey Clé API PiAPI.ai
+ * @param ignoreSSLErrors Si true, désactive la vérification SSL
  * @param logger Instance du logger
- * @returns L'image générée au format base64
+ * @returns L'URL de l'image générée
  */
 async function generateImage(
     prompt: string,
@@ -82,53 +85,17 @@ async function generateImage(
     }
 
     const taskId = result.data.task_id;
-    logger.debug(`Tâche créée, attente du résultat...`, { taskId });
+    logger.debug(`Tâche créée, attente du résultat...\n${stringify(result.data)}`, { taskId });
 
-    // Fonction pour vérifier l'état de la tâche
-    async function checkTaskStatus(): Promise<string> {
-        const statusUrl = `https://api.piapi.ai/api/v1/task/${taskId}`;
-
-        const statusResponse = await fetch(statusUrl, {
-            headers: { 'X-API-Key': apiKey }
-        });
-        
-        if (!statusResponse.ok) {
-            throw new Error(`Failed to check task status: ${statusResponse.statusText}`);
-        }
-        
-        const statusResult = await statusResponse.json() as ApiResponse;
-        logger.debug(`État de la tâche:`, { status: statusResult.data.status });
-
-        // Conversion du status en majuscules pour correspondre à l'enum
-        const status = statusResult.data.status.charAt(0).toUpperCase() + statusResult.data.status.slice(1).toLowerCase() as Status;
-        logger.debug(`État de la tâche normalisé:`, { status });
-
-        switch(status) {
-            case Status.Completed:
-                if (!statusResult.data.output?.image_url) {
-                    throw new Error('No image URL in completed task');
-                }
-                logger.debug(`Image générée avec succès`);
-                const imageUrl = statusResult.data.output.image_url;
-                return imageUrl;
-            
-            case Status.Failed:
-                const errorMessage = statusResult.data.error?.message || 'Unknown error';
-                logger.error(`Échec de la génération`, { error: errorMessage });
-                throw new Error(`Task failed: ${errorMessage}`);
-            
-            case Status.Pending:
-            case Status.Processing:
-                // Attendre 2 secondes avant de réessayer
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                return checkTaskStatus();
-            
-            default:
-                throw new Error(`Unknown task status: ${statusResult.data.status}`);
-        }
+    // Attendre la complétion de la tâche
+    const taskResult = await checkTaskStatus(taskId, apiKey, logger);
+    
+    // Vérifier la présence de l'URL de l'image
+    if (!taskResult.data.output?.image_url) {
+        throw new Error('No image URL in completed task');
     }
-
-    return checkTaskStatus();
+    
+    return taskResult.data.output.image_url;
 }
 
 /**
@@ -183,8 +150,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         config.PiAPI.IgnoreSSLErrors,
                         logger
                     );
-
-                    logger.info(`Génération d'image terminée avec succès, URL de l'image: ${imageUrl}`);
+                    
                     // Télécharger l'image
                     const imageResponse = await fetch(imageUrl);
                     if (!imageResponse.ok) {
