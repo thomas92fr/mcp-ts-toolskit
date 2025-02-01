@@ -116,10 +116,11 @@ try {
     PiAPI.TextToImage.Add_Tool(server, config, logger);
     PiAPI.GetTaskStatus.Add_Tool(server, config, logger);
     PiAPI.ImageTo3D.Add_Tool(server, config, logger);
-
+    PiAPI.MusicGeneration.Add_Tool(server, config, logger);  
 
     Ressources.GetLogs.Add_Ressource(server, config, logger);
     Ressources.Flux1ImagePrompt.Add_Ressource(server, config, logger);
+    Ressources.MusicGenerationPrompt.Add_Ressource(server, config, logger);
     
     //démarrage du serveur MCP sur stdio
     server.start({
