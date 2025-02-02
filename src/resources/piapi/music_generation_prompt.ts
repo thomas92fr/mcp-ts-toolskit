@@ -3,7 +3,7 @@ import { FastMCP } from "fastmcp";
 import { AppConfig } from "../../models/appConfig.js";
 import { ExtendedLogger } from "../../helpers/logger.js";
 
-export const RessourceName: string = `Music Generation Prompt Generator`;
+export const RessourceName: string = `Générateur de Prompts de Génération Musicale`;
 
 /**
  * Ajoute l'outil de génération de prompts de musique au serveur MCP.

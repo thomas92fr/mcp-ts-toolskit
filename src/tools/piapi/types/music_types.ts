@@ -56,7 +56,7 @@ export interface Input {
      * instrumental : génère une version instrumentale
      * user : utilise les paroles fournies par l'utilisateur
      */
-    lyrics_type: LyricsType;
+    lyrics_type?: LyricsType;
     /**
      * Indique si la sortie doit être instrumentale (sans voix)
      * Utilisé principalement avec music-s
@@ -87,6 +87,13 @@ export interface Input {
      * Utilisé principalement dans le mode personnalisé
      */
     title?: string;
+    /**
+     * Pour le modèle music-s uniquement
+     */
+    custom_mode?: boolean;
+    continue_at?: number;
+    continue_clip_id?: string;
+    mv?: string;
     [property: string]: any;
 }
 
@@ -120,4 +127,62 @@ export enum TaskType {
     GenerateMusic = "generate_music",
     /** Génération personnalisée (uniquement disponible avec music-s) */
     GenerateMusicCustom = "generate_music_custom",
+}
+
+/**
+ * Interface pour une chanson générée par music-u
+ */
+export interface UdioSong {
+    id: string;
+    title: string;
+    image_path: string;
+    lyrics?: string;
+    song_path: string;
+    duration: number;
+    tags: string[];
+    finished: boolean;
+    error_type: string | null;
+    error_code: string | null;
+    error_detail: string | null;
+}
+
+/**
+ * Interface pour un clip généré par music-s
+ */
+export interface SunoClip {
+    id: string;
+    video_url: string;
+    audio_url: string;
+    image_url: string;
+    image_large_url: string;
+    is_video_pending: boolean;
+    major_model_version: string;
+    model_name: string;
+    metadata: {
+        duration: number;
+        tags: string;
+        type: string;
+        error_type: string;
+        error_message: string;
+        [key: string]: any;
+    };
+    status: string;
+    title: string;
+    [key: string]: any;
+}
+
+/**
+ * Interface commune pour représenter une génération musicale
+ */
+export interface GeneratedSong {
+    id: string;
+    title: string;
+    audioUrl: string;
+    imageUrl: string;
+    videoUrl?: string;
+    lyrics?: string;
+    duration: number;
+    tags: string[];
+    model: Model;
+    localPath?: string;
 }

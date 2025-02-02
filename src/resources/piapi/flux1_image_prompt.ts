@@ -3,7 +3,7 @@ import { FastMCP } from "fastmcp";
 import { AppConfig } from "../../models/appConfig.js";
 import { ExtendedLogger } from "../../helpers/logger.js";
 
-export const RessourceName: string = `Flux1 Image Prompt Generator`;
+export const RessourceName: string = `Générateur de Prompts d'Images Flux1`;
 
 /**
  * Ajoute l'outil de génération de prompts Flux1 au serveur MCP.
