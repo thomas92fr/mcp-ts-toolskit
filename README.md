@@ -53,6 +53,12 @@ Ce serveur fournit plusieurs catégories d'outils :
 ### Outils Web
 - Effectuer des recherches via le moteur Brave Search
 
+### Outils IA (PiAPI)
+- Génération d'images à partir de descriptions textuelles
+- Génération de modèles 3D à partir d'images
+- Génération de musique avec ou sans paroles
+- Extension de musiques existantes
+
 ### Outils Pandoc
 - Convertir des documents Markdown vers d'autres formats (DOCX, PPTX, HTML)
 
@@ -72,6 +78,7 @@ Ce serveur fournit plusieurs catégories d'outils :
 3. Pandoc installé (pour les conversions de documents)
 4. SDK .NET (pour les outils .NET)
 5. Une clé API Brave Search (pour les recherches web)
+6. Une clé API PiAPI (pour les outils d'IA)
 
 ### Installation
 1. Installer les dépendances :
@@ -330,6 +337,58 @@ Analyse et sérialise les fichiers source C# dans un répertoire.
   - Analyse détaillée des using directives
   - Signatures des méthodes
   - Informations d'accessibilité
+
+### Outils PiAPI
+
+#### piapi_text_to_image
+Génère une image à partir d'une description textuelle.
+- Paramètres requis :
+  - prompt : Description textuelle de l'image à générer
+- Paramètres optionnels :
+  - model : Modèle à utiliser (flux1-dev, flux1-dev-advanced, flux1-schnell)
+  - width : Largeur de l'image (64-1024, défaut: 512)
+  - height : Hauteur de l'image (64-1024, défaut: 512)
+  - negative_prompt : Description des éléments à éviter
+
+#### piapi_image_to_3d
+Convertit une image en modèle 3D.
+- Paramètres requis :
+  - image_path ou image_url : Chemin local ou URL de l'image source
+- Paramètres optionnels :
+  - seed : Seed de génération (défaut: 0)
+  - ss_sampling_steps : Étapes d'échantillonnage SS (10-50)
+  - slat_sampling_steps : Étapes d'échantillonnage SLAT (10-50)
+  - ss_guidance_strength : Force du guidage SS (0-10)
+  - slat_guidance_strength : Force du guidage SLAT (0-10)
+
+#### piapi_music_generation
+Génère de la musique à partir d'une description textuelle.
+- Paramètres requis :
+  - gpt_description_prompt : Description de la musique à générer
+- Paramètres optionnels :
+  - model : Modèle à utiliser (music-u, music-s)
+  - task_type : Type de tâche (generate_music, generate_music_custom)
+  - lyrics_type : Type de paroles (generate, instrumental, user)
+  - tags : Types de musique (format: 'tag1,tag2')
+  - negative_tags : Styles à éviter
+  - prompt : Paroles personnalisées
+  - make_instrumental : Génère une version instrumentale
+
+#### piapi_extend_music
+Étend une musique existante générée par PiAPI.
+- Paramètres requis :
+  - continue_clip_id : ID du clip musical à étendre
+  - prompt : Paroles personnalisées pour l'extension
+- Paramètres optionnels :
+  - tags : Types de musique
+  - negative_tags : Styles à éviter
+
+#### piapi_get_task_status
+Vérifie le statut d'une tâche PiAPI.
+- Paramètres requis :
+  - taskId : ID de la tâche à surveiller
+- Paramètres optionnels :
+  - checkInterval : Intervalle entre les vérifications (1000-10000ms)
 
 ### Logging et Diagnostics
 
