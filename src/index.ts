@@ -1,8 +1,6 @@
 import { FastMCP } from "fastmcp";
 import { loadConfig } from "./helpers/loadConfig.js";
 import { createLogger, ExtendedLogger } from "./helpers/logger.js";
-import path from "path";
-import { fileURLToPath } from "url";
 import * as FileSystem from "./tools/filesystem/index.js";
 import * as Web from "./tools/web/index.js";
 import * as Pandoc from "./tools/pandoc/index.js";
@@ -15,7 +13,7 @@ import * as PiAPI from "./tools/piapi/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
-const SERVER_VERSION = `1.3.0`;
+const SERVER_VERSION = `1.4.0`;
 
 let tmplogger : ExtendedLogger | null = null;
 try {
