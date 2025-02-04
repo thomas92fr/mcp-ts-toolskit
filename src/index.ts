@@ -74,7 +74,6 @@ try {
     FileSystem.SearchFiles.Add_Tool(server, config, logger);
     FileSystem.MoveFile.Add_Tool(server, config, logger);
     FileSystem.DirectoryTree.Add_Tool(server, config, logger);
-    FileSystem.ListDirectory.Add_Tool(server, config, logger);
     FileSystem.CreateDirectory.Add_Tool(server, config, logger);
     FileSystem.EditFile.Add_Tool(server, config, logger);
     FileSystem.WriteFile.Add_Tool(server, config, logger);

@@ -30,7 +30,11 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schéma de validation pour les arguments
     const ClientArgsSchema = z.object({
-        path: z.string(),
+        path: z.string()
+            .describe('Directory path to analyze'),
+        recursive: z.boolean()
+            .default(true)
+            .describe('If true, analyze subdirectories recursively. If false, only list direct children'),
     });
 
     /**
@@ -38,7 +42,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
      * @param currentPath Chemin du dossier à analyser
      * @returns Promise avec l'arborescence des fichiers et dossiers
      */
-    async function buildTree(currentPath: string): Promise<TreeEntry[]> {
+    async function buildTree(currentPath: string, recursive: boolean): Promise<TreeEntry[]> {
         try {
             const validPath = config.validatePath(currentPath);
             const entries = await fs.readdir(validPath, { withFileTypes: true });
@@ -53,7 +57,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                 if (entry.isDirectory()) {
                     const subPath = path.join(currentPath, entry.name);
                     try {
-                        entryData.children = await buildTree(subPath);
+                        entryData.children = recursive ? await buildTree(subPath, recursive) : [];
                     } catch (error) {
                         logger.error(`Erreur lors de l'analyse du sous-dossier ${subPath}:`, error);
                         entryData.children = []; // Dossier vide en cas d'erreur
@@ -83,7 +87,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
             return logger.withOperationContext(async () => {
                 logger.info(`Appel de l'outil '${ToolName}': `, args);
                 
-                const treeData = await buildTree(args.path);
+                const treeData = await buildTree(args.path, args.recursive);
                 logger.info(`Analyse de l'arborescence terminée avec succès`);
                 return stringify(treeData);
                
