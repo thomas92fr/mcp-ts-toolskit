@@ -65,6 +65,11 @@ export interface IPiAPI {
      * Dossier dans lequel seront déposé les fichiers créés avec les outils PiAPI
      */
     OuputDirectory: string;
+
+    /**
+     * True pour indiquer que l'on utilise le plan gratuit
+     */
+    IsFreePlan: boolean;
 }
 
 
@@ -122,7 +127,8 @@ export class AppConfig implements IAppConfig {
     PiAPI: IPiAPI = {
         ApiKey: '',
         IgnoreSSLErrors: false,
-        OuputDirectory: ''
+        OuputDirectory: '',
+        IsFreePlan: true
     };
     Git: IGitConfig = {
         UserName: '',
