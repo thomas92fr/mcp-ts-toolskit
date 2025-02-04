@@ -36,7 +36,6 @@ Ce serveur fournit plusieurs catégories d'outils :
 - Rechercher des fichiers selon des critères
 - Déplacer des fichiers
 - Afficher l'arborescence des répertoires
-- Lister le contenu des répertoires
 - Créer des répertoires
 - Éditer des fichiers
 - Écrire des fichiers
@@ -121,9 +120,9 @@ Récupère des informations détaillées sur un fichier ou répertoire.
 Recherche récursive de fichiers selon un motif.
 - Paramètres requis :
   - path : Répertoire de départ
-  - pattern : Motif de recherche (insensible à la casse)
+  - pattern : Motif de recherche (supporte glob: *, ?, **)
 - Paramètres optionnels :
-  - excludePatterns : Motifs à exclure
+  - excludePatterns : Motifs glob à exclure
 
 #### move_file
 Déplace ou renomme un fichier/répertoire.
@@ -138,18 +137,12 @@ Déplace ou renomme un fichier/répertoire.
 Génère une vue arborescente en JSON d'un répertoire.
 - Paramètres requis :
   - path : Répertoire à analyser
+- Paramètres optionnels :
+  - recursive : Analyse récursive des sous-dossiers (défaut: true)
 - Retourne pour chaque entrée :
   - name : Nom de l'entrée
   - type : 'file' ou 'directory'
-  - children : Tableau pour les répertoires
-
-#### list_directory
-Liste détaillée du contenu d'un répertoire.
-- Paramètres requis :
-  - path : Répertoire à lister
-- Format :
-  - [FILE] pour les fichiers
-  - [DIR] pour les répertoires
+  - children : Tableau pour les répertoires (vide si recursive: false)
 
 #### create_directory
 Crée un nouveau répertoire (et ses parents si nécessaire).
