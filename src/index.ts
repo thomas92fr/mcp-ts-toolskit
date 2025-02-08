@@ -93,6 +93,8 @@ try {
     //ajout des outils dotnet
     DotNet.DotNetTool.Add_Tool(server, config, logger);
     DotNet.SerializeCsharp.Add_Tool(server, config, logger);
+    DotNet.AnalyzeCsharpDependencies.Add_Tool(server, config, logger);
+    
 
     //ajout des outils systeme
     System.GetCurrentDateTime.Add_Tool(server, config, logger);
