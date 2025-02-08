@@ -13,7 +13,7 @@ import * as PiAPI from "./tools/piapi/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
-const SERVER_VERSION = `1.4.0`;
+const SERVER_VERSION = `1.4.1`;
 
 let tmplogger : ExtendedLogger | null = null;
 try {
@@ -74,7 +74,6 @@ try {
     FileSystem.SearchFiles.Add_Tool(server, config, logger);
     FileSystem.MoveFile.Add_Tool(server, config, logger);
     FileSystem.DirectoryTree.Add_Tool(server, config, logger);
-    FileSystem.ListDirectory.Add_Tool(server, config, logger);
     FileSystem.CreateDirectory.Add_Tool(server, config, logger);
     FileSystem.EditFile.Add_Tool(server, config, logger);
     FileSystem.WriteFile.Add_Tool(server, config, logger);
@@ -94,6 +93,8 @@ try {
     //ajout des outils dotnet
     DotNet.DotNetTool.Add_Tool(server, config, logger);
     DotNet.SerializeCsharp.Add_Tool(server, config, logger);
+    DotNet.AnalyzeCsharpDependencies.Add_Tool(server, config, logger);
+    
 
     //ajout des outils systeme
     System.GetCurrentDateTime.Add_Tool(server, config, logger);

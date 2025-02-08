@@ -47,7 +47,8 @@ async function searchFiles(
                 }
 
                 // Vérifier le pattern sur le chemin relatif complet
-                if (relativePath.toLowerCase().includes(pattern.toLowerCase())) {
+                const globPattern = pattern.includes('*') || pattern.includes('?') ? pattern : `**/${pattern}/**`;
+                if (minimatch(relativePath, globPattern, { nocase: true, dot: true })) {
                     results.push(fullPath);
                 }
 
@@ -79,9 +80,18 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schéma de validation pour les arguments
     const ClientArgsSchema = z.object({
-        path: z.string(),
-        pattern: z.string(),
-        excludePatterns: z.array(z.string()).optional().default([])
+        path: z.string()
+            .describe('Starting directory path for the search'),
+        pattern: z.string()
+            .describe(`Search pattern - Supports full glob syntax:
+            "*": multiple characters in a segment (e.g., doc*.txt)
+            "?": single character in a segment (e.g., test?.txt)
+            "**": multiple path segments (e.g., src/**/*.ts)
+            Search is case-insensitive (e.g., *.TXT will also find *.txt)`),
+        excludePatterns: z.array(z.string())
+            .optional()
+            .default([])
+            .describe('List of patterns to exclude from the search. Supports glob patterns like **/*.tmp or **/node_modules/**')
     });
 
     // Ajout de l'outil au serveur

@@ -90,10 +90,18 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schéma de validation pour les arguments
     const ClientArgsSchema = z.object({
-        path: z.string(),
-        regex: z.string(),
-        excludePatterns: z.array(z.string()).optional().default([]),
-        fileExtensions: z.array(z.string()).optional().default([])
+        path: z.string()
+            .describe('Starting directory path for the content search'),
+        regex: z.string()
+            .describe('Regular expression pattern to search for in file contents. Supports standard regex syntax (e.g., "error.*exception", "\b\w+@\w+\.\w+\b" for emails)'),
+        excludePatterns: z.array(z.string())
+            .optional()
+            .default([])
+            .describe('List of patterns to exclude from the search. Supports glob patterns like **/*.tmp or **/node_modules/**'),
+        fileExtensions: z.array(z.string())
+            .optional()
+            .default([])
+            .describe('List of file extensions to search in (e.g., [".ts", "js"]). If empty, searches in all files')
     });
 
     // Ajout de l'outil au serveur
