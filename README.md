@@ -331,6 +331,19 @@ Analyse et sérialise les fichiers source C# dans un répertoire.
   - Signatures des méthodes
   - Informations d'accessibilité
 
+#### analyze_csharp_dependencies
+Analyse les dépendances d'un fichier C# en se basant sur son namespace et ses directives using.
+- Paramètres requis :
+  - filePath : Chemin du fichier C# à analyser
+- Fonctionnalités :
+  - Détection automatique des namespaces et directives using (standards et globales)
+  - Analyse récursive à partir du dossier .gitignore le plus proche
+  - Identification des fichiers partageant le même namespace
+  - Détection des relations entre les fichiers basée sur les directives using
+- Retourne au format YAML :
+  - Informations sur le fichier cible (chemin, namespace, usings standards et globaux)
+  - Liste des fichiers liés avec leur type de relation (même namespace ou référencé dans les usings)
+
 ### Outils PiAPI
 
 #### piapi_text_to_image
