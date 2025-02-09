@@ -165,13 +165,19 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         allUsings.some(using => using === file.namespace)
                     );
 
+                    // Filtrer uniquement les usings qui correspondent à des fichiers trouvés
+                    const foundNamespaces = new Set(relatedFiles.map(file => file.namespace));
+                    const matchedStandardUsings = targetFile.usings.filter(using => foundNamespaces.has(using));
+                    const matchedGlobalUsings = [...new Set([...targetFile.globalUsings, ...projectGlobalUsings])]
+                        .filter(using => foundNamespaces.has(using));
+
                     // Formatage des résultats
                     return stringify({
                         targetFile: {
                             path: validPath,
                             namespace: targetFile.namespace,
-                            standardUsings: targetFile.usings,
-                            globalUsings: [...targetFile.globalUsings, ...projectGlobalUsings]
+                            standardUsings: matchedStandardUsings,
+                            globalUsings: matchedGlobalUsings
                         },
                         relatedFiles: relatedFiles.map(file => ({
                             path: file.filePath,
