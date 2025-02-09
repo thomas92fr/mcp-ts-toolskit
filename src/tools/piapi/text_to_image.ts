@@ -35,7 +35,9 @@ async function generateImage(
     logger: ExtendedLogger,
     isFreePlan: boolean,
     lora_settings?: LoraSetting[],
-    control_net_settings?: ControlNetSetting[]
+    control_net_settings?: ControlNetSetting[],
+    steps?: number,
+    guidance_scale?: number
 ): Promise<string> {
     logger.info(`Génération d'image`, { prompt, width, height, model });
 
@@ -50,7 +52,9 @@ async function generateImage(
             prompt,
             negative_prompt,
             width,
-            height
+            height,
+            ...(steps !== undefined && { steps }),
+            ...(guidance_scale !== undefined && { guidance_scale })
         }
     };
 
@@ -143,6 +147,8 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
         width: number;
         height: number;
         model: Model;
+        steps?: number;
+        guidance_scale?: number;
     }
 
     interface PaidArgs extends BaseArgs {
@@ -160,6 +166,11 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schémas de validation
     const BaseArgsSchema = z.object({
+        steps: z.number().min(1).max(50).default(30)
+            .describe("Number of sampling steps (1-50). Higher values generally give better quality but take longer"),
+        guidance_scale: z.number().min(1.5).max(5).optional()
+            .describe("Guidance scale for generation (1.5-5). Higher values improve prompt adherence at the cost of image quality"),
+
         prompt: z.string().describe("Text description of the image to generate"),
         negative_prompt: z.string().default("low quality, worst quality, low resolution, blurry, text, watermark, signature, bad anatomy, bad proportions, deformed, mutation, extra limbs, extra fingers, fewer fingers, disconnected limbs, distorted face, bad face, poorly drawn face, cloned face, gross proportions, distorted proportions, disfigured, overly rendered, bad art, poorly drawn hands, poorly drawn feet, poorly rendered face, mutation, mutated, extra limbs, extra legs, extra arms, malformed limbs, missing arms, missing legs, floating limbs, disconnected limbs, out of focus, long neck, long body, ugly, duplicate, morbid, mutilated, poorly drawn, bad fingers, cropped")
             .describe("Text description of elements to avoid in the generated image. Used to prevent unwanted features, artifacts, and quality issues. Examples include: low quality, blur, text, watermarks, anatomical errors."),
@@ -223,7 +234,9 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         logger,
                         config.PiAPI.IsFreePlan,
                         isPaidArgs(args_typed) ? args_typed.lora_settings : undefined,
-                        isPaidArgs(args_typed) ? args_typed.control_net_settings : undefined
+                        isPaidArgs(args_typed) ? args_typed.control_net_settings : undefined,
+                        args_typed.steps,
+                        args_typed.guidance_scale
                     );
                     
                     let contents: { type: "text", text: string }[] = [
