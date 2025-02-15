@@ -5,6 +5,7 @@ import { ExtendedLogger } from "../../helpers/logger.js";
 import * as path from 'path';
 import * as fs from 'fs';
 import {stringify} from 'yaml';
+import { json2csv } from 'json-2-csv';
 
 export const ToolName: string = `analyze_csharp_dependencies`;
 
@@ -276,7 +277,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         .filter(using => foundNamespaces.has(using));
 
                     // Formatage des résultats
-                    return stringify({
+                    let result = {
                         targetFile: {
                             path: validPath,
                             namespace: targetFile.namespace,
@@ -289,7 +290,10 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                             relation: file.relation,
                             dependencyPath: file.dependencyPath
                         }))
-                    });
+                    }
+
+                    let result_txt = `${stringify(result.targetFile)}\n\n${json2csv(result.relatedFiles)}`;
+                    return result_txt;
 
                 } catch (error) {
                     logger.error(`Erreur lors de l'analyse du fichier C#: ${error}`);
