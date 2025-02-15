@@ -123,6 +123,14 @@ export interface ControlNetSetting {
      * Controlnet](/docs/available-lora-and-controlnet)
      */
     control_type: string;
+    /**
+     * Strength of the control network effect (0-1)
+     */
+    control_strength?: number;
+    /**
+     * Whether to return the preprocessed control image
+     */
+    return_preprocessed_image?: boolean;
     [property: string]: any;
 }
 
