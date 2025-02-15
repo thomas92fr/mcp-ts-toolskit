@@ -32,7 +32,6 @@ Ce serveur fournit plusieurs catégories d'outils :
 ### Outils FileSystem
 - Lister les répertoires autorisés
 - Lire plusieurs fichiers simultanément
-- Obtenir des informations détaillées sur les fichiers
 - Rechercher des fichiers selon des critères
 - Déplacer des fichiers
 - Afficher l'arborescence des répertoires
@@ -107,22 +106,23 @@ Lit plusieurs fichiers simultanément. Plus efficace que la lecture individuelle
   - Vérifie que les chemins sont dans les répertoires autorisés
   - Gestion des erreurs par fichier (l'échec d'un fichier n'arrête pas l'opération)
 
-#### get_file_info
-Récupère des informations détaillées sur un fichier ou répertoire.
-- Paramètres requis :
-  - path : Chemin du fichier à analyser
-- Retourne :
-  - Taille, dates de création/modification
-  - Permissions
-  - Type (fichier/répertoire)
-
 #### search_files
 Recherche récursive de fichiers selon un motif.
 - Paramètres requis :
   - path : Répertoire de départ
-  - pattern : Motif de recherche (supporte glob: *, ?, **)
+  - pattern : Motif de recherche avec syntaxe glob :
+    - Pour une recherche récursive : '**/*.ext' (ex: '**/*.ts' trouve tous les fichiers .ts dans tous les sous-répertoires)
+    - Pour le répertoire courant : '*.ext' (ex: '*.ts' trouve les fichiers .ts uniquement dans le répertoire spécifié)
+    - '*' correspond à plusieurs caractères dans un nom de fichier (ex: 'test*.ts')
+    - '?' correspond à un seul caractère (ex: 'test?.ts')
+    - '**' correspond à plusieurs niveaux de répertoires
 - Paramètres optionnels :
-  - excludePatterns : Motifs glob à exclure
+  - excludePatterns : Motifs à exclure (utilise la même syntaxe glob que le pattern de recherche)
+- Exemples :
+  - '**/*.ts' : tous les fichiers TypeScript dans tous les sous-répertoires
+  - 'src/**/*.js' : tous les fichiers JavaScript sous src/ et ses sous-répertoires
+  - '*.txt' : fichiers texte dans le répertoire spécifié uniquement
+  - '**/test/*' : tous les fichiers dans n'importe quel répertoire 'test'
 
 #### move_file
 Déplace ou renomme un fichier/répertoire.
@@ -340,9 +340,9 @@ Analyse les dépendances d'un fichier C# en se basant sur son namespace et ses d
   - Analyse récursive à partir du dossier .gitignore le plus proche
   - Identification des fichiers partageant le même namespace
   - Détection des relations entre les fichiers basée sur les directives using
-- Retourne au format YAML :
-  - Informations sur le fichier cible (chemin, namespace, usings standards et globaux)
-  - Liste des fichiers liés avec leur type de relation (même namespace ou référencé dans les usings)
+- Retourne :
+  - Informations sur le fichier cible au format YAML (chemin, namespace, usings standards et globaux)
+  - Liste des fichiers liés au format CSV avec leur type de relation (même namespace ou référencé dans les usings)
 
 ### Outils PiAPI
 

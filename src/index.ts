@@ -13,7 +13,7 @@ import * as PiAPI from "./tools/piapi/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
-const SERVER_VERSION = `1.5.1`;
+const SERVER_VERSION = `1.5.2`;
 
 let tmplogger : ExtendedLogger | null = null;
 try {
@@ -70,7 +70,6 @@ try {
     //ajout des outils
     FileSystem.ListAllowedDirectories.Add_Tool(server, config, logger);
     FileSystem.ReadMultipleFiles.Add_Tool(server, config, logger);
-    FileSystem.GetFileInfo.Add_Tool(server, config, logger);
     FileSystem.SearchFiles.Add_Tool(server, config, logger);
     FileSystem.MoveFile.Add_Tool(server, config, logger);
     FileSystem.DirectoryTree.Add_Tool(server, config, logger);

@@ -1,6 +1,6 @@
 {
   "name": "@thomas92fr/mcp-ts-toolskit",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "MCP server toolskit",
   "license": "MIT",
   "author": "Thomas DEVIN",
@@ -24,15 +24,16 @@
     "diff": "^5.1.0",
     "fastmcp": "^1.16.1",
     "glob": "^10.3.10",
+    "json-2-csv": "^5.5.8",
     "minimatch": "^10.0.1",
+    "open": "^9.1.0",
     "puppeteer-core": "^24.1.1",
     "simple-git": "^3.22.0",
     "uuid": "^11.0.5",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
     "yaml": "^2.7.0",
-    "zod": "^3.24.1",
-    "open": "^9.1.0"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/diff": "^5.0.9",
