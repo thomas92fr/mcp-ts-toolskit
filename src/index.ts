@@ -70,7 +70,6 @@ try {
     //ajout des outils
     FileSystem.ListAllowedDirectories.Add_Tool(server, config, logger);
     FileSystem.ReadMultipleFiles.Add_Tool(server, config, logger);
-    FileSystem.GetFileInfo.Add_Tool(server, config, logger);
     FileSystem.SearchFiles.Add_Tool(server, config, logger);
     FileSystem.MoveFile.Add_Tool(server, config, logger);
     FileSystem.DirectoryTree.Add_Tool(server, config, logger);
