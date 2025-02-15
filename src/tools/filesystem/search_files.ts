@@ -83,27 +83,37 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
         path: z.string()
             .describe('Starting directory path for the search'),
         pattern: z.string()
-            .describe(`Search pattern - Supports full glob syntax:
-            "*": multiple characters in a segment (e.g., doc*.txt)
-            "?": single character in a segment (e.g., test?.txt)
-            "**": multiple path segments (e.g., src/**/*.ts)
-            Search is case-insensitive (e.g., *.TXT will also find *.txt)`),
+            .describe(`Search pattern with glob syntax:
+            - For recursive search: '**/*.ext' (e.g. '**/*.ts' finds all .ts files in all subdirectories)
+            - For current directory: '*.ext' (e.g. '*.ts' finds .ts files only in specified directory)
+            - '*' matches multiple characters in filename (e.g. 'test*.ts')
+            - '?' matches single character (e.g. 'test?.ts')
+            - '**' matches multiple directory levels
+            Examples:
+            - '**/*.ts' : all TypeScript files in all subdirectories
+            - 'src/**/*.js' : all JavaScript files under src/ and its subdirectories
+            - '*.txt' : text files in specified directory only
+            - '**/test/*' : all files in any 'test' directory
+            Search is case-insensitive.`),
         excludePatterns: z.array(z.string())
             .optional()
             .default([])
-            .describe('List of patterns to exclude from the search. Supports glob patterns like **/*.tmp or **/node_modules/**')
+            .describe('Patterns to exclude from search. Uses same glob syntax as search pattern. Examples: ["**/node_modules/**", "**/*.tmp", "**/build/**"]')
     });
 
     // Ajout de l'outil au serveur
     server.addTool({
         name: ToolName,
         description: "Recursively search for files and directories matching a pattern. " +
-          "Searches through all subdirectories from the starting path. The search " +
-          "is case-insensitive and matches partial names. Returns full paths to all " +
-          "matching items. Great for finding files when you don't know their exact location. " +
+          "Searches through all subdirectories from the starting path. " +
+          "For a recursive search, use '**/*.extension' pattern (e.g. '**/*.ts' for all TypeScript files). " +
+          "For searching in current directory only, use '*.extension'. " +
+          "The search is case-insensitive and supports partial names. " +
+          "Use quotes around patterns containing special characters. " +
+          "Returns full paths to all matching items. " +
           "Only searches within allowed directories.",
         parameters: ClientArgsSchema,
-        execute: async (args, context) => {
+        execute: async (args) => {
             return logger.withOperationContext(async () => {
                 logger.info(`Appel de l'outil '${ToolName}': `, args);
 
