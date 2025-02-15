@@ -13,7 +13,7 @@ import * as PiAPI from "./tools/piapi/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
-const SERVER_VERSION = `1.5.1`;
+const SERVER_VERSION = `1.5.2`;
 
 let tmplogger : ExtendedLogger | null = null;
 try {
