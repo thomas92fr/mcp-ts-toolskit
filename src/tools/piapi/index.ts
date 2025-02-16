@@ -4,3 +4,4 @@ export * as ImageTo3D from "./image_to_3d.js";
 export * as MusicGeneration from "./music_generation.js";
 export * as ExtendMusic from "./extend_music.js";
 export * as TestControlnetLora from "./test_controlnet_lora.js";
+export * as VideoGeneration from "./video_generation.js";

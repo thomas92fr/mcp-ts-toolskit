@@ -116,6 +116,7 @@ try {
     PiAPI.ImageTo3D.Add_Tool(server, config, logger);
     PiAPI.MusicGeneration.Add_Tool(server, config, logger);  
     PiAPI.ExtendMusic.Add_Tool(server, config, logger);  
+    PiAPI.VideoGeneration.Add_Tool(server, config, logger);
     //PiAPI.TestControlnetLora.Add_Tool(server, config, logger);  
 
     Ressources.GetLogs.Add_Ressource(server, config, logger);
