@@ -56,6 +56,9 @@ Ce serveur fournit plusieurs catégories d'outils :
 - Génération de modèles 3D à partir d'images
 - Génération de musique avec ou sans paroles
 - Extension de musiques existantes
+- Génération de vidéos à partir de descriptions textuelles
+- Conversion d'images en vidéos
+- Extension de vidéos existantes
 
 ### Outils Pandoc
 - Convertir des documents Markdown vers d'autres formats (DOCX, PPTX, HTML)
@@ -388,6 +391,29 @@ Génère de la musique à partir d'une description textuelle.
 - Paramètres optionnels :
   - tags : Types de musique
   - negative_tags : Styles à éviter
+
+#### piapi_video_generation
+Génère une vidéo à partir d'une description textuelle et optionnellement d'images clés.
+- Paramètres requis :
+  - prompt : Description textuelle de la vidéo à générer
+- Paramètres optionnels :
+  - task_type : Type de tâche (video_generation, extend_video)
+  - key_frames : Images clés pour la génération
+    - frame0/frame1 :
+      - type : Type d'image (image pour image-to-video, generation pour video-extend)
+      - url : URL de l'image (pour image-to-video)
+      - id : ID de la tâche vidéo source (pour video-extend)
+  - model_name : Modèle à utiliser (ray-v1 par défaut, ray-v2 uniquement pour txt2video)
+  - duration : Durée de la vidéo (5-10 secondes)
+  - aspect_ratio : Ratio d'aspect (9:16, 3:4, 1:1, 4:3, 16:9, 21:9)
+  - webhook_config : Configuration des notifications webhook
+- Fonctionnalités :
+  - Génération de vidéo à partir de texte
+  - Conversion d'images en vidéo
+  - Extension de vidéos existantes
+  - Support de différents ratios d'aspect
+  - Sauvegarde automatique des fichiers générés
+  - Ouverture automatique avec le lecteur par défaut
 
 #### piapi_get_task_status
 Vérifie le statut d'une tâche PiAPI.
