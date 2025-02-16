@@ -20,6 +20,11 @@ enum VideoTaskType {
     Extend = "extend_video"
 }
 
+enum KeyFrameType {
+    Image = "image",
+    Generation  = "generation"
+}
+
 enum AspectRatio {
     Ratio_9_16 = "9:16",
     Ratio_3_4 = "3:4",
@@ -36,8 +41,8 @@ enum ModelName {
 
 // Types pour les structures de données
 interface KeyFrame {
-    type: string;
-    url: string;
+    type: KeyFrameType;
+    url?: string;
     id?: string;
 }
 
@@ -68,6 +73,7 @@ interface VideoGenerationParams {
 }
 
 interface VideoOutput {
+    taskId:string;
     videoUrl: string;
     thumbnailUrl: string;
     lastFrameUrl: string;
@@ -150,6 +156,7 @@ async function generateVideo(
     }
 
     return {
+        taskId: taskId,
         videoUrl: taskResult.data.output.video.url,
         thumbnailUrl: taskResult.data.output.thumbnail?.url,
         lastFrameUrl: taskResult.data.output.last_frame?.url,
@@ -171,12 +178,15 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schéma de validation pour les paramètres de l'outil
     const KeyFrameSchema = z.object({
-        type: z.string(),
-        url: z.string().url(),
-        id: z.string().optional()
+        type:  z.enum([KeyFrameType.Image, KeyFrameType.Generation]).default(KeyFrameType.Image)
+        .describe("Dans une tâche de conversion d'image en vidéo, le type de l'image ne peut être défini que sur image, dans la tâche d'extension vidéo, frame0 doit être défini. Le type doit être 'generation' et l'id doit être l'identifiant de la tâche vidéo originale."),
+        url: z.string().url().optional(),
+        id: z.string().optional().describe("Dans une tâche d'extension vidéo, frame0 doit être défini. Le type doit être 'generation' et l'id doit être l'identifiant de la tâche vidéo originale.")
     });
 
-    const ToolArgsSchema = z.object({
+    const ToolArgsSchema = z.object({       
+        task_type: z.enum([VideoTaskType.Generation, VideoTaskType.Extend]).default(VideoTaskType.Generation)
+            .describe("Type de la tâche demandée, génération de vidéo, ou extension d'une vidéo"),
         prompt: z.string().describe("Description textuelle de la vidéo à générer"),
         key_frames: z.object({
             frame0: KeyFrameSchema.optional(),
@@ -214,7 +224,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                 try {
                     const params: VideoGenerationParams = {
                         model: VideoModel.Luma,
-                        task_type: VideoTaskType.Generation,
+                        task_type: args.task_type,
                         input: {
                             prompt: args.prompt,
                             key_frames: args.key_frames,
@@ -238,6 +248,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                     );
                     
                     let contents: { type: "text", text: string }[] = [
+                        { type: "text", text: `Id de la tâche: ${videoOutput.taskId}` },
                         { type: "text", text: `URL de la vidéo: ${videoOutput.videoUrl}` },
                         { type: "text", text: `URL de la vidéo raw: ${videoOutput.rawVideoUrl}` }
                     ];

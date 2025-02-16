@@ -122,6 +122,7 @@ try {
     Ressources.GetLogs.Add_Ressource(server, config, logger);
     Ressources.Flux1ImagePrompt.Add_Ressource(server, config, logger);
     Ressources.MusicGenerationPrompt.Add_Ressource(server, config, logger);
+    Ressources.VideoPrompt.Add_Ressource(server, config, logger);
     
     //démarrage du serveur MCP sur stdio
     server.start({
