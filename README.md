@@ -4,7 +4,7 @@ Un serveur de Protocole de Contexte de Modèle (MCP) qui fournit une suite compl
 
 Ce serveur intègre une validation stricte des paramètres via Zod, une gestion avancée des logs avec Winston, et un système de configuration flexible permettant de contrôler précisément l'accès aux différents outils et ressources.
 
-## Version actuelle : 1.6.0
+## Version actuelle : 1.7.0
 
 ## Configuration
 
