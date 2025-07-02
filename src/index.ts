@@ -117,6 +117,13 @@ try {
     PiAPI.MusicGeneration.Add_Tool(server, config, logger);  
     PiAPI.ExtendMusic.Add_Tool(server, config, logger);  
     PiAPI.VideoGeneration.Add_Tool(server, config, logger);
+    PiAPI.AudioTools.Add_Tool(server, config, logger);
+    PiAPI.ImageToolkit.Add_Tool(server, config, logger);
+    PiAPI.VideoGenerators.Add_Tool(server, config, logger);
+    PiAPI.VideoToolkit.Add_Tool(server, config, logger);
+    PiAPI.ShowImage.Add_Tool(server, config, logger);
+    PiAPI.SunoLumaTools.Add_Tool(server, config, logger);
+    PiAPI.FluxAdvanced.Add_Tool(server, config, logger);
     //PiAPI.TestControlnetLora.Add_Tool(server, config, logger);  
 
     Ressources.GetLogs.Add_Ressource(server, config, logger);

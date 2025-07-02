@@ -343,6 +343,83 @@ export const PIAPI_MODEL_CONFIG: Record<string, ModelConfig> = {
         maxAttempts: 30,
         timeout: 600,
         supportsBatchSize: false
+    },
+    [Model.QubicoImageToolkit]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 60,
+        supportsBatchSize: false
+    },
+    [Model.QubicoVideoToolkit]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 600,
+        supportsBatchSize: false
+    },
+    [Model.QubicoHunyuan]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 60,
+        timeout: 900,
+        supportsBatchSize: false
+    },
+    [Model.QubicoSkyreels]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 300,
+        supportsBatchSize: false
+    },
+    [Model.QubicoWanx]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 60,
+        timeout: 900,
+        supportsBatchSize: false
+    },
+    [Model.QubicoMMAudio]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 600,
+        supportsBatchSize: false
+    },
+    [Model.QubicoTTS]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 600,
+        supportsBatchSize: false
+    },
+    [Model.Midjourney]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 900,
+        supportsBatchSize: false
+    },
+    [Model.Kling]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 900,
+        supportsBatchSize: false
+    },
+    [Model.Luma]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 900,
+        supportsBatchSize: false
+    },
+    [Model.MusicS]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 900,
+        supportsBatchSize: false
     }
 };
 
@@ -391,3 +468,39 @@ export const AudioOutputSchema = z
         message: "At least one audio URL must be provided",
         path: ["audio_url"],
     });
+
+// Schémas supplémentaires pour les nouveaux outils
+export const KlingOutputSchema = z.object({
+    video_url: z.string(),
+    works: z.array(z.object({
+        video: z.object({
+            resource_without_watermark: z.string(),
+        })
+    }))
+});
+
+export const LumaOutputSchema = z.object({
+    video_raw: z.object({
+        url: z.string(),
+        width: z.number(),
+        height: z.number(),
+    }),
+    last_frame: z.object({
+        url: z.string(),
+        width: z.number(),
+        height: z.number(),
+    }),
+});
+
+export const SunoMusicOutputSchema = z.object({
+    clips: z.record(z.string(), z.object({
+        audio_url: z.string(),
+        image_url: z.string(),
+    }))
+});
+
+export const TrellisOutputSchema = z.object({
+    no_background_image: z.string(),
+    combined_video: z.string(),
+    model_file: z.string(),
+});
