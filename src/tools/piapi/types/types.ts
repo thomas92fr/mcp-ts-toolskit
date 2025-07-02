@@ -64,6 +64,10 @@ export interface Input {
      */
     batch_size?: number;
     /**
+     * Number of sampling steps for generation
+     */
+    steps?: number;
+    /**
      * Check [Flux with LoRA and Controlnet](/docs/flux-with-lora-and-controlnet)
      */
     control_net_settings?: ControlNetSetting[];
@@ -155,7 +159,18 @@ export enum Model {
     QubicoFlux1Dev = "Qubico/flux1-dev",
     QubicoFlux1DevAdvanced = "Qubico/flux1-dev-advanced",
     QubicoFlux1Schnell = "Qubico/flux1-schnell",
-    QubicoTrellis = "Qubico/trellis"
+    QubicoTrellis = "Qubico/trellis",
+    QubicoImageToolkit = "Qubico/image-toolkit",
+    QubicoVideoToolkit = "Qubico/video-toolkit",
+    QubicoHunyuan = "Qubico/hunyuan",
+    QubicoSkyreels = "Qubico/skyreels",
+    QubicoWanx = "Qubico/wanx",
+    QubicoMMAudio = "Qubico/mmaudio",
+    QubicoTTS = "Qubico/tts",
+    Midjourney = "midjourney",
+    Kling = "kling",
+    Luma = "luma",
+    MusicS = "music-s"
 }
 
 export enum TaskType {
@@ -167,7 +182,37 @@ export enum TaskType {
     ReduxVariation = "redux-variation",
     Txt2Img = "txt2img",
     Txt2ImgLora = "txt2img-lora",
-    ImageTo3D = "image-to-3d"
+    ImageTo3D = "image-to-3d",
+    // Image Toolkit
+    FaceSwap = "face-swap",
+    BackgroundRemove = "background-remove",
+    Segment = "segment",
+    Upscale = "upscale",
+    // Video Toolkit
+    VideoFaceSwap = "face-swap",
+    VideoUpscale = "upscale",
+    // Hunyuan
+    Txt2Video = "txt2video",
+    FastTxt2Video = "fast-txt2video",
+    Img2VideoConcat = "img2video-concat",
+    Img2VideoReplace = "img2video-replace",
+    // Skyreels
+    SkyreelsImg2Video = "img2video",
+    // Wan
+    Txt2Video1_3B = "txt2video-1.3b",
+    Txt2Video14B = "txt2video-14b",
+    Img2Video14B = "img2video-14b",
+    // MMAudio
+    Video2Audio = "video2audio",
+    // TTS
+    ZeroShot = "zero-shot",
+    // Midjourney
+    MidjourneyImagine = "imagine",
+    // Kling
+    KlingVideoGeneration = "video_generation",
+    KlingEffects = "effects",
+    // Luma
+    LumaVideoGeneration = "video_generation"
 }
 
 /**
@@ -255,3 +300,94 @@ export interface ApiOutput {
     model_url?: string;
     [property: string]: any;
 }
+
+/**
+ * Configuration pour les modèles PiAPI avec timeouts et paramètres optimaux
+ */
+export interface ModelConfig {
+    defaultSteps: number;
+    maxSteps: number;
+    maxAttempts: number;
+    timeout: number; // en secondes
+    supportsBatchSize?: boolean;
+}
+
+/**
+ * Configurations spécifiques par modèle basées sur la version officielle PiAPI
+ */
+export const PIAPI_MODEL_CONFIG: Record<string, ModelConfig> = {
+    [Model.QubicoFlux1Schnell]: {
+        defaultSteps: 4,
+        maxSteps: 10,
+        maxAttempts: 30,
+        timeout: 60,
+        supportsBatchSize: true
+    },
+    [Model.QubicoFlux1Dev]: {
+        defaultSteps: 25,
+        maxSteps: 40,
+        maxAttempts: 30,
+        timeout: 120,
+        supportsBatchSize: false
+    },
+    [Model.QubicoFlux1DevAdvanced]: {
+        defaultSteps: 25,
+        maxSteps: 40,
+        maxAttempts: 30,
+        timeout: 180,
+        supportsBatchSize: false
+    },
+    [Model.QubicoTrellis]: {
+        defaultSteps: 50,
+        maxSteps: 50,
+        maxAttempts: 30,
+        timeout: 600,
+        supportsBatchSize: false
+    }
+};
+
+/**
+ * Classe d'erreur personnalisée pour les erreurs utilisateur PiAPI
+ */
+export class PiAPIUserError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'PiAPIUserError';
+    }
+}
+
+/**
+ * Schémas de validation Zod pour les sorties API
+ */
+import { z } from "zod";
+
+export const ImageOutputSchema = z
+    .object({
+        image_url: z.string().optional(),
+        image_urls: z.array(z.string()).optional(),
+    })
+    .refine(
+        (data) => data.image_url || (data.image_urls && data.image_urls.length > 0),
+        {
+            message: "At least one image URL must be provided",
+            path: ["image_url", "image_urls"],
+        }
+    );
+
+export const VideoOutputSchema = z
+    .object({
+        video_url: z.string(),
+    })
+    .refine((data) => data.video_url, {
+        message: "At least one video URL must be provided",
+        path: ["video_url"],
+    });
+
+export const AudioOutputSchema = z
+    .object({
+        audio_url: z.string(),
+    })
+    .refine((data) => data.audio_url, {
+        message: "At least one audio URL must be provided",
+        path: ["audio_url"],
+    });

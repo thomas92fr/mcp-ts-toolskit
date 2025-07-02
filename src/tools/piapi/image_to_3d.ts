@@ -2,11 +2,10 @@ import { z } from "zod";
 import { FastMCP } from "fastmcp";
 import { AppConfig } from "../../models/appConfig.js";
 import { ExtendedLogger } from "../../helpers/logger.js";
-import { ApiCallParams, Model, TaskType, ApiResponse } from "./types/types.js";
-import { stringify } from 'yaml';
+import { ApiCallParams, Model, TaskType, PIAPI_MODEL_CONFIG, PiAPIUserError } from "./types/types.js";
+import { handleTask } from "./task_handler.js";
 import fs from 'fs';
 import path from 'path';
-import { checkTaskStatus } from './get_task_status.js';
 import open from 'open';
 
 export const ToolName: string = `piapi_image_to_3d`;
@@ -26,19 +25,15 @@ async function imageToBase64(imagePath: string): Promise<string> {
  * Convertit une image en modèle 3D via l'API PiAPI.ai
  * 
  * @param imageSource URL ou Base64 de l'image à convertir
- * @param seed Seed pour la génération (optionnel)
- * @param ss_sampling_steps Étapes d'échantillonnage SS (optionnel)
- * @param slat_sampling_steps Étapes d'échantillonnage SLAT (optionnel)
- * @param ss_guidance_strength Force du guidage SS (optionnel)
- * @param slat_guidance_strength Force du guidage SLAT (optionnel)
+ * @param seed Seed pour la génération
+ * @param ss_sampling_steps Étapes d'échantillonnage SS
+ * @param slat_sampling_steps Étapes d'échantillonnage SLAT
+ * @param ss_guidance_strength Force du guidage SS
+ * @param slat_guidance_strength Force du guidage SLAT
  * @param apiKey Clé API PiAPI.ai
  * @param ignoreSSLErrors Si true, désactive la vérification SSL
  * @param logger Instance du logger
- * @returns Un objet contenant :
- * - modelUrl: L'URL du fichier modèle 3D (.glb)
- * - videoUrl: L'URL de la vidéo de prévisualisation
- * - imageUrl: L'URL de l'image sans fond
- * - processingTime: Le temps de traitement en secondes
+ * @returns Un objet contenant les URLs et informations sur la tâche
  */
 async function generateModel(
     imageSource: string,
@@ -50,10 +45,14 @@ async function generateModel(
     apiKey: string,
     ignoreSSLErrors: boolean,
     logger: ExtendedLogger
-): Promise<{ modelUrl: string; videoUrl: string; imageUrl: string; processingTime: number }> {
+): Promise<{ modelUrl: string; videoUrl: string; imageUrl: string; taskId: string; usage: string; processingTime?: number }> {
     logger.info(`Conversion d'image en 3D`, { seed, ss_sampling_steps, slat_sampling_steps });
 
-    const url = 'https://api.piapi.ai/api/v1/task';
+    // Obtenir la configuration du modèle Trellis
+    const modelConfig = PIAPI_MODEL_CONFIG[Model.QubicoTrellis];
+    if (!modelConfig) {
+        throw new PiAPIUserError(`Trellis model configuration not found`);
+    }
 
     // Construction du corps de la requête
     const requestData: ApiCallParams = {
@@ -69,69 +68,26 @@ async function generateModel(
         }
     };
 
-    // Création des options de fetch avec gestion SSL
-    const fetchOptions: RequestInit = {
-        method: 'POST',
-        headers: {
-            'X-API-Key': apiKey,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
-    };
-
-    // Ajout des options SSL si nécessaire
-    if (ignoreSSLErrors) {
-        logger.info('SSL verification disabled');
-        Object.assign(fetchOptions, {
-            agent: new (await import('node:https')).Agent({
-                rejectUnauthorized: false
-            })
-        });
-    }
-
-    // Exécution de la requête initiale
-    const response = await fetch(url, fetchOptions);
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        logger.error(`Erreur API PiAPI`, { status: response.status, statusText: response.statusText, error: errorText });
-        throw new Error(`PiAPI error: ${response.status} ${response.statusText}\n${errorText}`);
-    }
-
-    const result = await response.json() as ApiResponse;
-    
-    // Vérification de la réponse initiale
-    if (result.code !== 200) {
-        logger.error(`Erreur lors de la création de la tâche`, result);
-        throw new Error(`Task creation failed: ${result.message}`);
-    }
-
-    const taskId = result.data.task_id;
-    logger.info(`Tâche créée, attente du résultat...\n${stringify(result.data)}`, { taskId });
-
-    // Attendre la complétion de la tâche
-    const taskResult = await checkTaskStatus(taskId, apiKey, logger);
+    // Utiliser le gestionnaire de tâches unifié
+    const result = await handleTask(requestData, apiKey, ignoreSSLErrors, logger, modelConfig);
     
     // Vérifier la présence des URLs dans la sortie
-    if (!taskResult.data.output) {
-        throw new Error('No output data in completed task');
+    if (!result.output) {
+        throw new PiAPIUserError(`TaskId: ${result.taskId}, No output data in completed task`);
     }
 
-    const { model_file, combined_video, no_background_image } = taskResult.data.output;
+    const { model_file, combined_video, no_background_image } = result.output;
     if (!model_file) {
-        throw new Error('No model file URL in completed task');
+        throw new PiAPIUserError(`TaskId: ${result.taskId}, No model file URL in completed task`);
     }
-
-    // Calculer la durée du traitement
-    const startTime = taskResult.data.meta.started_at ? new Date(taskResult.data.meta.started_at) : new Date();
-    const endTime = taskResult.data.meta.ended_at ? new Date(taskResult.data.meta.ended_at) : new Date();
-    const processingTime = (endTime.getTime() - startTime.getTime()) / 1000; // en secondes
 
     return {
         modelUrl: model_file,
         videoUrl: combined_video,
         imageUrl: no_background_image,
-        processingTime
+        taskId: result.taskId,
+        usage: result.usage,
+        processingTime: result.processingTime
     };
 }
 
@@ -196,7 +152,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         imageSource = await imageToBase64(fullPath);
                     }
 
-                    const modelUrl = await generateModel(
+                    const result = await generateModel(
                         imageSource,
                         args.seed,
                         args.ss_sampling_steps,
@@ -209,10 +165,12 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                     );
                     
                     let contents: { type: "text", text: string }[] = [
-                        { type: "text" as const, text: `URL du modèle 3D (.glb): ${modelUrl.modelUrl}` },
-                        { type: "text" as const, text: `URL de la vidéo de prévisualisation: ${modelUrl.videoUrl}` },
-                        { type: "text" as const, text: `URL de l'image sans fond: ${modelUrl.imageUrl}` },
-                        { type: "text" as const, text: `Temps de traitement: ${modelUrl.processingTime.toFixed(1)} secondes` }
+                        { type: "text" as const, text: `Task ID: ${result.taskId}` },
+                        { type: "text" as const, text: `3D model generated successfully! Usage: ${result.usage} tokens` },
+                        { type: "text" as const, text: `Processing time: ${result.processingTime?.toFixed(1) || 'unknown'} seconds` },
+                        { type: "text" as const, text: `3D model (.glb) URL: ${result.modelUrl}` },
+                        { type: "text" as const, text: `Preview video URL: ${result.videoUrl}` },
+                        { type: "text" as const, text: `Background-free image URL: ${result.imageUrl}` }
                     ];
 
                     // Si OutputDirectory est spécifié, télécharger et sauvegarder le modèle
@@ -226,21 +184,22 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
                         // Extraire l'extension à partir de l'URL
                         // Téléchargement du modèle 3D
-                        const modelUrlParts = modelUrl.modelUrl.split('/');
+                        const modelUrlParts = result.modelUrl.split('/');
                         const modelFileName = modelUrlParts[modelUrlParts.length - 1];
                         const modelOutputPath = path.join(outputDir, modelFileName);
 
                         // Téléchargement de la vidéo
-                        const videoUrlParts = modelUrl.videoUrl.split('/');
+                        const videoUrlParts = result.videoUrl.split('/');
                         const videoFileName = videoUrlParts[videoUrlParts.length - 1];
                         const videoOutputPath = path.join(outputDir, videoFileName);
 
                         // Téléchargement de l'image sans fond
-                        const imageUrlParts = modelUrl.imageUrl.split('/');
+                        const imageUrlParts = result.imageUrl.split('/');
                         const imageFileName = imageUrlParts[imageUrlParts.length - 1];
                         const imageOutputPath = path.join(outputDir, imageFileName);
+                        
                         // Télécharger et sauvegarder le modèle 3D
-                        const modelResponse = await fetch(modelUrl.modelUrl);
+                        const modelResponse = await fetch(result.modelUrl);
                         if (!modelResponse.ok) {
                             throw new Error(`Failed to download 3D model: ${modelResponse.statusText}`);
                         }
@@ -248,11 +207,11 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         await fs.promises.writeFile(modelOutputPath, modelBuffer);
                         contents.push({ 
                             type: "text" as const, 
-                            text: `Modèle 3D (.glb) sauvegardé: ${modelOutputPath}` 
+                            text: `3D model (.glb) saved: ${modelOutputPath}` 
                         });
 
                         // Télécharger et sauvegarder la vidéo
-                        const videoResponse = await fetch(modelUrl.videoUrl);
+                        const videoResponse = await fetch(result.videoUrl);
                         if (!videoResponse.ok) {
                             throw new Error(`Failed to download preview video: ${videoResponse.statusText}`);
                         }
@@ -260,11 +219,11 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         await fs.promises.writeFile(videoOutputPath, videoBuffer);
                         contents.push({ 
                             type: "text" as const, 
-                            text: `Vidéo de prévisualisation sauvegardée: ${videoOutputPath}` 
+                            text: `Preview video saved: ${videoOutputPath}` 
                         });
 
                         // Télécharger et sauvegarder l'image sans fond
-                        const imageResponse = await fetch(modelUrl.imageUrl);
+                        const imageResponse = await fetch(result.imageUrl);
                         if (!imageResponse.ok) {
                             throw new Error(`Failed to download background-free image: ${imageResponse.statusText}`);
                         }
@@ -272,14 +231,17 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         await fs.promises.writeFile(imageOutputPath, imageBuffer);
                         contents.push({ 
                             type: "text" as const, 
-                            text: `Image sans fond sauvegardée: ${imageOutputPath}` 
+                            text: `Background-free image saved: ${imageOutputPath}` 
                         });
                     }
 
                     return { content: contents };
                 } catch (error) {
-                    logger.error(`Erreur lors de la génération du modèle 3D:`, error);
-                    throw error;
+                    logger.error(`Error during 3D model generation:`, error);
+                    if (error instanceof PiAPIUserError) {
+                        throw error; // Re-throw user errors as-is
+                    }
+                    throw new Error(`3D model generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
                 }
             });
         },

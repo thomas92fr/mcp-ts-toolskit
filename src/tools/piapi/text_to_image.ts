@@ -2,11 +2,10 @@ import { z } from "zod";
 import { FastMCP } from "fastmcp";
 import { AppConfig } from "../../models/appConfig.js";
 import { ExtendedLogger } from "../../helpers/logger.js";
-import { ApiCallParams, Model, TaskType, ApiResponse, LoraSetting, ControlNetSetting } from "./types/types.js";
-import { stringify } from 'yaml';
+import { ApiCallParams, Model, TaskType, LoraSetting, ControlNetSetting, PIAPI_MODEL_CONFIG, PiAPIUserError } from "./types/types.js";
+import { handleTask, parseImageOutput } from "./task_handler.js";
 import fs from 'fs';
 import path from 'path';
-import { checkTaskStatus } from './get_task_status.js';
 import open from 'open';
 
 export const ToolName: string = `piapi_text_to_image`;
@@ -16,35 +15,53 @@ export const ToolName: string = `piapi_text_to_image`;
  * 
  * @param prompt Description textuelle de l'image à générer
  * @param negative_prompt Texte décrivant les éléments à éviter dans l'image
- * @param width Largeur de l'image (optionnel)
- * @param height Hauteur de l'image (optionnel)
+ * @param width Largeur de l'image
+ * @param height Hauteur de l'image
  * @param model Modèle à utiliser pour la génération
  * @param apiKey Clé API PiAPI.ai
  * @param ignoreSSLErrors Si true, désactive la vérification SSL
  * @param logger Instance du logger
- * @returns L'URL de l'image générée
+ * @param isFreePlan Si true, limite aux fonctionnalités gratuites
+ * @param batch_size Nombre d'images à générer (Schnell uniquement)
+ * @param lora_settings Paramètres LoRA (version payante)
+ * @param control_net_settings Paramètres ControlNet (version payante)
+ * @param steps Nombre d'étapes (auto-calculé si non spécifié)
+ * @param guidance_scale Échelle de guidage
+ * @returns Les URLs des images générées et informations sur la tâche
  */
 async function generateImage(
     prompt: string,
     negative_prompt: string,
-    width: number = 1024,
-    height: number = 1024,
-    model: Model = Model.QubicoFlux1Dev,
+    width: number,
+    height: number,
+    model: Model,
     apiKey: string,
     ignoreSSLErrors: boolean,
     logger: ExtendedLogger,
     isFreePlan: boolean,
+    batch_size?: number,
     lora_settings?: LoraSetting[],
     control_net_settings?: ControlNetSetting[],
     steps?: number,
     guidance_scale?: number
-): Promise<string> {
-    logger.info(`Génération d'image`, { prompt, width, height, model });
+): Promise<{ urls: string[], taskId: string, usage: string, processingTime?: number }> {
+    logger.info(`Génération d'image`, { prompt, width, height, model, batch_size });
 
-    const url = 'https://api.piapi.ai/api/v1/task';
+    // Obtenir la configuration du modèle
+    const modelConfig = PIAPI_MODEL_CONFIG[model];
+    if (!modelConfig) {
+        throw new PiAPIUserError(`Unsupported model: ${model}`);
+    }
 
+    // Validation batch_size
+    if (batch_size && batch_size > 1 && !modelConfig.supportsBatchSize) {
+        throw new PiAPIUserError(`batch_size > 1 is only supported for Schnell model`);
+    }
+
+    // Calcul automatique des steps si non spécifié
+    const finalSteps = steps ? Math.min(steps, modelConfig.maxSteps) : modelConfig.defaultSteps;
+    
     // Construction du corps de la requête
-    // Construction du corps de la requête avec conditionnels pour version payante
     const requestData: ApiCallParams = {
         model: model,
         task_type: TaskType.Txt2Img,
@@ -53,7 +70,8 @@ async function generateImage(
             negative_prompt,
             width,
             height,
-            ...(steps !== undefined && { steps }),
+            steps: finalSteps,
+            ...(batch_size && { batch_size }),
             ...(guidance_scale !== undefined && { guidance_scale })
         }
     };
@@ -63,63 +81,36 @@ async function generateImage(
         if (lora_settings && lora_settings.length > 0) {
             requestData.task_type = TaskType.Txt2ImgLora;
             requestData.input.lora_settings = lora_settings;
+            // LoRA nécessite le modèle advanced
+            if (model !== Model.QubicoFlux1DevAdvanced) {
+                requestData.model = Model.QubicoFlux1DevAdvanced;
+                logger.info('Switching to advanced model for LoRA support');
+            }
         }
         
         if (control_net_settings && control_net_settings.length > 0) {
             requestData.task_type = TaskType.ControlnetLora;
             requestData.input.control_net_settings = control_net_settings;
+            // ControlNet nécessite le modèle advanced
+            if (model !== Model.QubicoFlux1DevAdvanced) {
+                requestData.model = Model.QubicoFlux1DevAdvanced;
+                logger.info('Switching to advanced model for ControlNet support');
+            }
         }
     }
 
-    // Création des options de fetch avec gestion SSL
-    const fetchOptions: RequestInit = {
-        method: 'POST',
-        headers: {
-            'X-API-Key': apiKey,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
+    // Utiliser le gestionnaire de tâches unifié
+    const result = await handleTask(requestData, apiKey, ignoreSSLErrors, logger, modelConfig);
+    
+    // Parser la sortie
+    const urls = parseImageOutput(result.taskId, result.output);
+    
+    return {
+        urls,
+        taskId: result.taskId,
+        usage: result.usage,
+        processingTime: result.processingTime
     };
-
-    // Ajout des options SSL si nécessaire
-    if (ignoreSSLErrors) {
-        logger.info('SSL verification disabled');
-        Object.assign(fetchOptions, {
-            agent: new (await import('node:https')).Agent({
-                rejectUnauthorized: false
-            })
-        });
-    }
-
-    // Exécution de la requête initiale
-    const response = await fetch(url, fetchOptions);
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        logger.error(`Erreur API PiAPI`, { status: response.status, statusText: response.statusText, error: errorText });
-        throw new Error(`PiAPI error: ${response.status} ${response.statusText}\n${errorText}`);
-    }
-
-    const result = await response.json() as ApiResponse;
-    
-    // Vérification de la réponse initiale
-    if (result.code !== 200) {
-        logger.error(`Erreur lors de la création de la tâche`, result);
-        throw new Error(`Task creation failed: ${result.message}`);
-    }
-
-    const taskId = result.data.task_id;
-    logger.info(`Tâche créée, attente du résultat...\n${stringify(result.data)}`, { taskId });
-
-    // Attendre la complétion de la tâche
-    const taskResult = await checkTaskStatus(taskId, apiKey, logger);
-    
-    // Vérifier la présence de l'URL de l'image
-    if (!taskResult.data.output?.image_url) {
-        throw new Error('No image URL in completed task');
-    }
-    
-    return taskResult.data.output.image_url;
 }
 
 /**
@@ -141,7 +132,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
         return;
     }
 
-        interface BaseArgs {
+    interface BaseArgs {
         prompt: string;
         negative_prompt: string;
         width: number;
@@ -149,6 +140,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
         model: Model;
         steps?: number;
         guidance_scale?: number;
+        batch_size?: number;
     }
 
     interface PaidArgs extends BaseArgs {
@@ -166,11 +158,6 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
     // Schémas de validation
     const BaseArgsSchema = z.object({
-        steps: z.number().min(1).max(50).default(30)
-            .describe("Number of sampling steps (1-50). Higher values generally give better quality but take longer"),
-        guidance_scale: z.number().min(1.5).max(5).optional()
-            .describe("Guidance scale for generation (1.5-5). Higher values improve prompt adherence at the cost of image quality"),
-
         prompt: z.string().describe("Text description of the image to generate"),
         negative_prompt: z.string().default("low quality, worst quality, low resolution, blurry, text, watermark, signature, bad anatomy, bad proportions, deformed, mutation, extra limbs, extra fingers, fewer fingers, disconnected limbs, distorted face, bad face, poorly drawn face, cloned face, gross proportions, distorted proportions, disfigured, overly rendered, bad art, poorly drawn hands, poorly drawn feet, poorly rendered face, mutation, mutated, extra limbs, extra legs, extra arms, malformed limbs, missing arms, missing legs, floating limbs, disconnected limbs, out of focus, long neck, long body, ugly, duplicate, morbid, mutilated, poorly drawn, bad fingers, cropped")
             .describe("Text description of elements to avoid in the generated image. Used to prevent unwanted features, artifacts, and quality issues. Examples include: low quality, blur, text, watermarks, anatomical errors."),
@@ -180,11 +167,23 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
             .describe("Image height (64-1024, default 512)"),
         model: z.enum([Model.QubicoFlux1Dev, Model.QubicoFlux1DevAdvanced, Model.QubicoFlux1Schnell])
             .default(Model.QubicoFlux1Dev)
-            .describe("Model to use for generation. Note: Must be 'Qubico/flux1-dev-advanced' when using LoRA or ControlNet settings")
+            .describe("Model to use for generation. Note: Must be 'Qubico/flux1-dev-advanced' when using LoRA or ControlNet settings"),
+        steps: z.number().min(1).max(50).optional()
+            .describe("Number of sampling steps. Auto-selected based on model if not specified"),
+        guidance_scale: z.number().min(1.5).max(5).optional()
+            .describe("Guidance scale for generation (1.5-5). Higher values improve prompt adherence at the cost of image quality"),
+        batch_size: z.number().min(1).max(4).optional().default(1)
+            .describe("Number of images to generate (only for Schnell model)")
     });
 
-    // Schéma pour la version gratuite
-    const FreeArgsSchema = BaseArgsSchema;
+    // Schéma pour la version gratuite (avec validation de taille)
+    const FreeArgsSchema = BaseArgsSchema.refine(
+        (data) => data.width * data.height <= 1048576,
+        {
+            message: "Width * height cannot exceed 1048576 pixels",
+            path: ["width", "height"]
+        }
+    );
 
     // Schéma pour la version payante avec les fonctionnalités supplémentaires
     const PaidArgsSchema = BaseArgsSchema.extend({
@@ -199,7 +198,13 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
             control_strength: z.number().min(0).max(1).default(0.55).describe("Strength of the control network effect (0-1)"),
             return_preprocessed_image: z.boolean().default(true).describe("Whether to return the preprocessed control image")
         })).optional().describe("Check Flux with LoRA and Controlnet")
-    });
+    }).refine(
+        (data) => data.width * data.height <= 1048576,
+        {
+            message: "Width * height cannot exceed 1048576 pixels",
+            path: ["width", "height"]
+        }
+    );
 
     // Sélection du schéma et typage en fonction d'IsFreePlan
     const ClientArgsSchema = config.PiAPI.IsFreePlan ? FreeArgsSchema : PaidArgsSchema;
@@ -208,8 +213,8 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
     server.addTool({
         name: ToolName,
         description: config.PiAPI.IsFreePlan 
-            ? "Generates an image from a text description using PiAPI.ai API. Supports different models and image sizes. The width * height cannot exceed 1048576 pixels."
-            : "Generates an image from a text description using PiAPI.ai API. Supports different models, image sizes, LoRA and ControlNet features. The width * height cannot exceed 1048576 pixels.",
+            ? "Generates an image from a text description using PiAPI.ai API. Supports different models and image sizes. Automatically optimizes steps based on model. The width * height cannot exceed 1048576 pixels."
+            : "Generates an image from a text description using PiAPI.ai API. Supports different models, image sizes, LoRA and ControlNet features. Automatically optimizes steps based on model and supports batch generation for Schnell. The width * height cannot exceed 1048576 pixels.",
         parameters: ClientArgsSchema,
         execute: async (args) => {
             return logger.withOperationContext(async () => {
@@ -220,10 +225,15 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
 
                     // Vérification de la version du plan si des fonctionnalités payantes sont utilisées
                     if (config.PiAPI.IsFreePlan && isPaidArgs(args_typed)) {
-                        throw new Error("LoRA and ControlNet settings are only available in the paid version");
+                        throw new PiAPIUserError("LoRA and ControlNet settings are only available in the paid version");
                     }
 
-                    const imageUrl = await generateImage(
+                    // Validation batch_size pour modèle Schnell uniquement
+                    if (args_typed.batch_size && args_typed.batch_size > 1 && args_typed.model !== Model.QubicoFlux1Schnell) {
+                        throw new PiAPIUserError("batch_size > 1 is only supported for Schnell model");
+                    }
+
+                    const result = await generateImage(
                         args_typed.prompt,
                         args_typed.negative_prompt,
                         args_typed.width,
@@ -233,6 +243,7 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                         config.PiAPI.IgnoreSSLErrors,
                         logger,
                         config.PiAPI.IsFreePlan,
+                        args_typed.batch_size,
                         isPaidArgs(args_typed) ? args_typed.lora_settings : undefined,
                         isPaidArgs(args_typed) ? args_typed.control_net_settings : undefined,
                         args_typed.steps,
@@ -240,10 +251,13 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                     );
                     
                     let contents: { type: "text", text: string }[] = [
-                        { type: "text" as const, text: `URL de l'image: ${imageUrl}` }
+                        { type: "text" as const, text: `Task ID: ${result.taskId}` },
+                        { type: "text" as const, text: `Images generated successfully! Usage: ${result.usage} tokens` },
+                        { type: "text" as const, text: `Processing time: ${result.processingTime?.toFixed(1) || 'unknown'} seconds` },
+                        { type: "text" as const, text: `Image URLs:\n${result.urls.join('\n')}` }
                     ];
 
-                    // Si OutputDirectory est spécifié, télécharger et sauvegarder l'image
+                    // Si OutputDirectory est spécifié, télécharger et sauvegarder les images
                     if (config.PiAPI.OuputDirectory) {
                         const outputDir = config.PiAPI.OuputDirectory;
                         
@@ -252,47 +266,64 @@ export function Add_Tool(server: FastMCP, config: AppConfig, logger: ExtendedLog
                             fs.mkdirSync(outputDir, { recursive: true });
                         }
 
-                        // Extraire l'extension à partir de l'URL
-                        const urlParts = imageUrl.split('/');
-                        const fileName = urlParts[urlParts.length - 1];
-                        const outputPath = path.join(outputDir, fileName);
+                        for (let i = 0; i < result.urls.length; i++) {
+                            const imageUrl = result.urls[i];
+                            
+                            try {
+                                // Extraire l'extension à partir de l'URL ou utiliser .png par défaut
+                                const urlParts = imageUrl.split('/');
+                                const fileName = urlParts[urlParts.length - 1] || `image_${result.taskId}_${i + 1}.png`;
+                                const outputPath = path.join(outputDir, fileName);
 
-                        // Télécharger l'image
-                        const imageResponse = await fetch(imageUrl);
-                        if (!imageResponse.ok) {
-                            throw new Error(`Failed to download image: ${imageResponse.statusText}`);
-                        }
+                                // Télécharger l'image
+                                const imageResponse = await fetch(imageUrl);
+                                if (!imageResponse.ok) {
+                                    throw new Error(`Failed to download image ${i + 1}: ${imageResponse.statusText}`);
+                                }
 
-                        // Sauvegarder l'image
-                        const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-                        await fs.promises.writeFile(outputPath, imageBuffer);
+                                // Sauvegarder l'image
+                                const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+                                await fs.promises.writeFile(outputPath, imageBuffer);
 
-                        // Ajouter le chemin de l'image sauvegardée à la réponse
-                        contents.push({ 
-                            type: "text" as const, 
-                            text: `Image sauvegardée: ${outputPath}` 
-                        });
+                                contents.push({ 
+                                    type: "text" as const, 
+                                    text: `Image ${i + 1} saved: ${outputPath}` 
+                                });
 
-                        // Ouvrir l'image avec l'application par défaut
-                        try {
-                            await open(outputPath);
-                            contents.push({
-                                type: "text" as const,
-                                text: `Image ouverte avec l'application par défaut`
-                            });
-                        } catch (error) {
-                            logger.warn(`Impossible d'ouvrir l'image avec l'application par défaut:`, error);
-                            contents.push({
-                                type: "text" as const,
-                                text: `Note: Impossible d'ouvrir l'image automatiquement`
-                            });
+                                // Ouvrir la première image avec l'application par défaut
+                                if (i === 0) {
+                                    try {
+                                        await open(outputPath);
+                                        contents.push({
+                                            type: "text" as const,
+                                            text: `First image opened with default application`
+                                        });
+                                    } catch (error) {
+                                        logger.warn(`Unable to open image with default application:`, error);
+                                        contents.push({
+                                            type: "text" as const,
+                                            text: `Note: Unable to open image automatically`
+                                        });
+                                    }
+                                }
+                            } catch (downloadError) {
+                                logger.error(`Error downloading/saving image ${i + 1}:`, downloadError);
+                                const errorMessage = downloadError instanceof Error ? downloadError.message : 'Unknown error';
+                                contents.push({
+                                    type: "text" as const,
+                                    text: `Error saving image ${i + 1}: ${errorMessage}`
+                                });
+                            }
                         }
                     }
 
                     return { content: contents };
                 } catch (error) {
-                    logger.error(`Erreur lors de la génération d'image:`, error);
-                    throw error;
+                    logger.error(`Error during image generation:`, error);
+                    if (error instanceof PiAPIUserError) {
+                        throw error; // Re-throw user errors as-is
+                    }
+                    throw new Error(`Image generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
                 }
             });
         },
