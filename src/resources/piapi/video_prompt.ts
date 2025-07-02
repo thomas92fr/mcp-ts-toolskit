@@ -169,29 +169,52 @@ b) À éviter absolument :
    - Les scènes trop complexes ou chaotiques
    - Les changements de scène multiples
 
-7. Guide des mouvements de caméra et compositions artistiques :
+7. Guide des mouvements de caméra Dream Machine 1.6+ :
 
-a) Types de mouvements fondamentaux :
-   - Travelling (latéral, avant, arrière) :
-     * Latéral : "La caméra glisse horizontalement, révélant progressivement le paysage urbain"
-     * Avant : "La caméra avance doucement à travers le tunnel de fleurs"
-     * Arrière : "La caméra s'éloigne lentement du sujet, révélant le contexte"
+a) Contrôle Camera Motion (12 mouvements disponibles) :
+   IMPORTANT : Commencer le prompt par "camera" pour activer le menu déroulant des mouvements
+   
+   - Mouvements latéraux :
+     * "camera pan left" : Panoramique vers la gauche
+     * "camera pan right" : Panoramique vers la droite
+     * "camera move left" : Déplacement latéral gauche
+     * "camera move right" : Déplacement latéral droit
 
-   - Panoramique (horizontal, vertical) :
-     * Horizontal : "La caméra pivote de gauche à droite, balayant l'horizon montagneux"
-     * Vertical : "La caméra monte le long du gratte-ciel, du niveau de la rue jusqu'au sommet"
+   - Mouvements avant/arrière :
+     * "camera push in" : Zoom avant/approche du sujet
+     * "camera pull back" : Zoom arrière/éloignement
+     * "camera dolly forward" : Travelling avant fluide
+     * "camera dolly backward" : Travelling arrière fluide
 
-   - Mouvements combinés :
-     * Orbital : "La caméra décrit un cercle fluide autour du sujet central"
-     * Hélicoïdal : "La caméra monte en spirale autour de l'escalier en colimaçon"
+   - Mouvements verticaux :
+     * "camera move up" : Déplacement vertical ascendant
+     * "camera move down" : Déplacement vertical descendant
+     * "camera tilt up" : Inclinaison vers le haut
+     * "camera tilt down" : Inclinaison vers le bas
 
-b) Compositions dynamiques :
-   - Règle des tiers :
-     * "Sujet principal positionné à l'intersection des tiers, mouvement de caméra respectant la grille"
-   - Lignes directrices :
-     * "Utilisez les lignes naturelles de l'environnement pour guider le mouvement"
-   - Points de focus :
-     * "Transition fluide entre différents points d'intérêt dans la scène"
+   - Mouvements complexes :
+     * "camera orbit" : Mouvement orbital autour du sujet
+     * "camera tracking" : Suivi de mouvement fluide
+
+ATTENTION : Bien penser à la position initiale des objets et au contexte d'arrière-plan car le mouvement de caméra peut révéler des éléments indésirables
+
+b) Techniques cinématographiques optimisées :
+   - Enhanced Prompt (OBLIGATOIRE) :
+     * Toujours activer l'option "Enhance Prompt" pour de meilleurs résultats
+     * Ajoute automatiquement des mouvements de caméra et angles variés
+     * Améliore la qualité cinématographique globale
+
+   - Prompts de longueur optimale :
+     * Court (20-50 mots) : Concepts simples, génération rapide
+     * Moyen (50-150 mots) : OPTIMAL pour la plupart des cas
+     * Long (150+ mots) : Scènes complexes, mais risque de confusion
+
+   - Structure POV (Point de Vue) :
+     * "first-person view" : Perspective à la première personne
+     * "cyclist's perspective" : Vue du cycliste
+     * "bird's eye view" : Vue d'oiseau
+     * "worm's eye view" : Contre-plongée extrême
+     * "over-the-shoulder shot" : Plan par-dessus l'épaule
 
 c) Effets de profondeur :
    - Premier plan / Arrière-plan :
@@ -211,11 +234,17 @@ d) Exemples par genre :
    3. Portraits et Sujets :
    "Mouvement orbital fluide autour du sujet, éclairé par une lumière douce. La caméra maintient une distance constante tout en tournant, révélant les subtiles variations d'expressions et d'éclairage. Profondeur de champ réduite avec un arrière-plan en bokeh évolutif."
 
-   4. Compositions abstraites :
-   "Travelling avant à travers des formes géométriques flottantes, transition progressive entre différentes échelles. Mouvement fluide combinant rotation et avancée, créant une chorégraphie visuelle rythmée. Jeu sur les changements de focus entre les différents plans."
+   4. Prompts avec Emojis (technique avancée) :
+   Les emojis peuvent servir de prompts et génèrent des résultats surprenants :
+   - 😭 (visage qui pleure) : Vidéos émotionnelles correspondantes
+   - 🌅 (lever de soleil) : Scènes d'aube cinématographiques
+   - 🎉 (fête) : Scènes de célébration dynamiques
 
-   5. Scènes dynamiques :
-   "Suivi latéral fluide d'un sujet en mouvement, maintenant une composition équilibrée. La caméra anticipe les mouvements, créant une chorégraphie entre le sujet et le cadrage. Profondeur dynamisée par des éléments traversant différents plans."
+   5. Iteration et ré-essais :
+   - TOUJOURS essayer plusieurs fois le même prompt
+   - Les résultats varient significativement entre générations
+   - Ajuster légèrement le prompt si insatisfait
+   - Note : La probabilité d'obtenir le résultat parfait dès la première tentative est faible
 
 8. Optimisations par ratio d'aspect :
 a) Vertical (9:16) :
@@ -233,15 +262,25 @@ c) Carré (1:1) :
    - Compositions centrées
    - Mouvements symétriques
 
-9. Points techniques à surveiller :
-a) Durée et mouvement :
-   - 5 secondes : mouvements simples et directs
-   - 10 secondes : possibilité de mouvements plus complexes
+9. Optimisations spécifiques Dream Machine :
 
-b) Stabilité :
-   - Préférer les mouvements fluides
-   - Éviter les changements brusques
-   - Maintenir une cohérence visuelle
+a) Version 1.6+ améliorations :
+   - Meilleure adhérence aux prompts
+   - Rendu de texte plus précis
+   - Mouvement de caméra contrôlé
+   - Physique plus réaliste (120 frames en 120 secondes)
+   - Trajectoires de caméra optimisées
+
+b) Techniques d'optimisation :
+   - Éviter les prompts avec images pour plus de dynamisme
+   - Utiliser des descriptions d'émotions plutôt que d'actions statiques
+   - Privilégier les scènes avec mouvement naturel
+   - Penser cinématographiquement (plans, angles, éclairage)
+
+c) Durée et mouvement optimisés :
+   - 5 secondes : mouvements simples, un seul mouvement de caméra
+   - 10 secondes : mouvements complexes, transitions multiples
+   - Privilégier la fluidité sur la complexité
 
 10. Validation et itération :
 a) Avant la génération :
@@ -255,13 +294,16 @@ b) Après la génération :
    - Ajuster le prompt si nécessaire
 
 IMPORTANT - Points de contrôle finaux :
-1. Vérifier la compatibilité modèle/durée
-2. Confirmer la cohérence du ratio d'aspect
-3. Valider la clarté du prompt
-4. S'assurer de la faisabilité technique
-5. Vérifier l'absence d'éléments interdits
+1. ACTIVER "Enhanced Prompt" obligatoirement
+2. Vérifier la compatibilité modèle/durée (ray-v2 seulement txt2video)
+3. Commencer le prompt par "camera" si mouvement spécifique désiré
+4. Confirmer la cohérence du ratio d'aspect
+5. Valider la longueur optimale du prompt (50-150 mots)
+6. S'assurer de la faisabilité technique
+7. Vérifier l'absence d'éléments interdits
+8. Prévoir plusieurs tentatives (itération normale)
 
-Note finale : La génération de vidéos étant un processus itératif, commencez toujours par une version simple du prompt avant d'ajouter des éléments de complexité.`;
+Note finale : Dream Machine 1.6+ privilégie la qualité cinématographique. Pensez comme un réalisateur : définissez votre plan, votre mouvement de caméra, votre éclairage et votre ambiance avant de générer.`;
 
         return basePrompt;
     }
