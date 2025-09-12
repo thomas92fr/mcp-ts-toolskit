@@ -114,6 +114,18 @@ export interface Input {
      * Guidance strength for SLAT (0-10, default: 3)
      */
     slat_guidance_strength?: number;
+    /**
+     * Number of images to generate for Gemini (1-4)
+     */
+    num_images?: number;
+    /**
+     * Output format for Gemini (jpeg or png)
+     */
+    output_format?: "jpeg" | "png";
+    /**
+     * List of URLs of input images for editing (Gemini)
+     */
+    image_urls?: string[];
     [property: string]: any;
 }
 
@@ -170,7 +182,8 @@ export enum Model {
     Midjourney = "midjourney",
     Kling = "kling",
     Luma = "luma",
-    MusicS = "music-s"
+    MusicS = "music-s",
+    Gemini = "gemini"
 }
 
 export enum TaskType {
@@ -212,7 +225,9 @@ export enum TaskType {
     KlingVideoGeneration = "video_generation",
     KlingEffects = "effects",
     // Luma
-    LumaVideoGeneration = "video_generation"
+    LumaVideoGeneration = "video_generation",
+    // Gemini
+    Gemini25FlashImage = "gemini-2.5-flash-image"
 }
 
 /**
@@ -419,6 +434,13 @@ export const PIAPI_MODEL_CONFIG: Record<string, ModelConfig> = {
         maxSteps: 1,
         maxAttempts: 30,
         timeout: 900,
+        supportsBatchSize: false
+    },
+    [Model.Gemini]: {
+        defaultSteps: 1,
+        maxSteps: 1,
+        maxAttempts: 30,
+        timeout: 120,
         supportsBatchSize: false
     }
 };

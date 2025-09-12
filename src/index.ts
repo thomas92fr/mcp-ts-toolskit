@@ -124,6 +124,7 @@ try {
     PiAPI.ShowImage.Add_Tool(server, config, logger);
     PiAPI.SunoLumaTools.Add_Tool(server, config, logger);
     PiAPI.FluxAdvanced.Add_Tool(server, config, logger);
+    PiAPI.GeminiImageGeneration.Add_Tool(server, config, logger);
     //PiAPI.TestControlnetLora.Add_Tool(server, config, logger);  
 
     Ressources.GetLogs.Add_Ressource(server, config, logger);

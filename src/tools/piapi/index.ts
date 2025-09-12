@@ -13,3 +13,4 @@ export * as ShowImage from "./show_image.js";
 export * as SunoLumaTools from "./suno_luma_tools.js";
 export * as FluxAdvanced from "./flux_advanced.js";
 export * as TaskHandler from "./task_handler.js";
+export * as GeminiImageGeneration from "./gemini_image_generation.js";
