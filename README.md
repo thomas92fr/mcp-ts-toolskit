@@ -4,7 +4,7 @@ Un serveur de Protocole de Contexte de Modèle (MCP) qui fournit une suite compl
 
 Ce serveur intègre une validation stricte des paramètres via Zod, une gestion avancée des logs avec Winston, et un système de configuration flexible permettant de contrôler précisément l'accès aux différents outils et ressources.
 
-## Version actuelle : 1.7.0
+## Version actuelle : 1.8.0
 
 ## Configuration
 
@@ -75,6 +75,7 @@ Ce serveur fournit plusieurs catégories d'outils :
 
 #### Génération d'Images
 - **piapi_text_to_image** : Génération d'images à partir de descriptions textuelles
+- **piapi_gemini_image_generation** : Génération et édition d'images avec Gemini 2.5 Flash Image
 - **piapi_derive_image** : Variation d'images existantes
 - **piapi_modify_image** : Modification d'images (inpaint/outpaint)
 - **piapi_generate_image_controlnet** : Génération avec ControlNet et LoRA
@@ -313,6 +314,21 @@ Génère une image à partir d'un texte.
   - `batch_size` : Nombre d'images (Schnell uniquement)
   - `lora_settings` : Paramètres LoRA (version payante)
   - `control_net_settings` : Paramètres ControlNet (version payante)
+
+##### piapi_gemini_image_generation
+Génère et édite des images avec Gemini 2.5 Flash Image de Google.
+- **Paramètres requis :**
+  - `prompt` : Description de l'image (DOIT être en anglais)
+- **Paramètres optionnels :**
+  - `num_images` : Nombre d'images (1-4, défaut: 1, coût: 0.03$/image)
+  - `output_format` : Format de sortie ("jpeg" ou "png", défaut: jpeg)
+  - `image_urls` : URLs d'images à modifier (pour l'édition conversationnelle)
+
+**Fonctionnalités uniques :**
+- Édition conversationnelle : modification progressive d'images existantes
+- Cohérence de personnages : maintien de l'apparence à travers plusieurs générations
+- Approche narrative : excelle avec des descriptions fluides plutôt que des mots-clés
+- Support natif de l'inpainting, outpainting et changements de style
 
 ##### piapi_midjourney_imagine
 Génération d'image via Midjourney.
@@ -601,7 +617,8 @@ Obtient la date et l'heure actuelles.
 Le serveur fournit également des ressources consultables :
 
 - **Logs du serveur** : Consultation des dernières entrées de log
-- **Prompts Flux1** : Ressources d'aide pour la génération d'images
+- **Prompts Flux1** : Ressources d'aide pour la génération d'images avec Flux
+- **Prompts Gemini** : Guide d'expert pour Gemini 2.5 Flash Image (Nano Banana)
 - **Prompts de génération musicale** : Guides pour la création musicale
 - **Prompts vidéo** : Ressources pour la génération de vidéos
 
