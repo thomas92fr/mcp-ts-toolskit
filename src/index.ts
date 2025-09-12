@@ -13,7 +13,7 @@ import * as PiAPI from "./tools/piapi/index.js";
 
 
 const SERVER_NAME = `mcp-ts-toolskit`;
-const SERVER_VERSION = `1.7.0`;
+const SERVER_VERSION = `1.8.0`;
 
 let tmplogger : ExtendedLogger | null = null;
 try {
@@ -124,12 +124,14 @@ try {
     PiAPI.ShowImage.Add_Tool(server, config, logger);
     PiAPI.SunoLumaTools.Add_Tool(server, config, logger);
     PiAPI.FluxAdvanced.Add_Tool(server, config, logger);
+    PiAPI.GeminiImageGeneration.Add_Tool(server, config, logger);
     //PiAPI.TestControlnetLora.Add_Tool(server, config, logger);  
 
     Ressources.GetLogs.Add_Ressource(server, config, logger);
     Ressources.Flux1ImagePrompt.Add_Ressource(server, config, logger);
     Ressources.MusicGenerationPrompt.Add_Ressource(server, config, logger);
     Ressources.VideoPrompt.Add_Ressource(server, config, logger);
+    Ressources.GeminiImagePrompt.Add_Ressource(server, config, logger);
     
     //démarrage du serveur MCP sur stdio
     server.start({
