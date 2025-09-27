@@ -8,6 +8,7 @@ import * as Npm from "./tools/npm/index.js";
 import * as DotNet from "./tools/dotnet/index.js";
 import * as System from "./tools/system/index.js";
 import * as Git from "./tools/git/index.js";
+import * as GitBash from "./tools/gitbash/index.js";
 import * as Ressources from "./resources/index.js";
 import * as PiAPI from "./tools/piapi/index.js";
 
@@ -109,6 +110,11 @@ try {
     Git.GitFetch.Add_Tool(server, config, logger);
     Git.GitDiff.Add_Tool(server, config, logger);
     Git.GitLog.Add_Tool(server, config, logger);
+
+    //ajout des outils gitbash
+    GitBash.ReadFileWithGitBash.Add_Tool(server, config, logger);
+    GitBash.GrepWithGitBash.Add_Tool(server, config, logger);
+    GitBash.FindWithGitBash.Add_Tool(server, config, logger);
 
     //ajout des outils PiAPI
     PiAPI.TextToImage.Add_Tool(server, config, logger);

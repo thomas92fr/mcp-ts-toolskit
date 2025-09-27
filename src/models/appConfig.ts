@@ -11,6 +11,16 @@ export interface IPandocConfig {
     PandocPath: string;
 }
 
+/**
+ * Configuration spécifique pour GitBash
+ */
+export interface IGitBashConfig {
+    /**
+     * Chemin vers l'executable de GitBash (git-bash.exe)
+     */
+    GitBashPath: string;
+}
+
 
 /**
  * Configuration spécifique pour GIT
@@ -108,6 +118,11 @@ export interface IAppConfig {
     Git: IGitConfig;
 
     /**
+     * Configuration spécifique pour GitBash
+     */
+    GitBash: IGitBashConfig;
+
+    /**
      * Nombre de lignes de logs à afficher dans la ressource logs
      */
     LogsNumberToShow: number;
@@ -137,6 +152,9 @@ export class AppConfig implements IAppConfig {
     };
     Pandoc: IPandocConfig = {
        PandocPath: ''
+    };
+    GitBash: IGitBashConfig = {
+        GitBashPath: ''
     };
     LogsNumberToShow:number = 50;
 
