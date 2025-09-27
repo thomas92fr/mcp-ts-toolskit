@@ -115,6 +115,7 @@ try {
     GitBash.ReadFileWithGitBash.Add_Tool(server, config, logger);
     GitBash.GrepWithGitBash.Add_Tool(server, config, logger);
     GitBash.FindWithGitBash.Add_Tool(server, config, logger);
+    GitBash.LsWithGitBash.Add_Tool(server, config, logger);
 
     //ajout des outils PiAPI
     PiAPI.TextToImage.Add_Tool(server, config, logger);
