@@ -7,7 +7,7 @@ export const RessourceName: string = `Générateur de Prompts Gemini 2.5 Flash I
 
 /**
  * Ajoute l'outil de génération de prompts Gemini au serveur MCP.
- * 
+ *
  * @param server Instance du serveur FastMCP
  * @param config Configuration de l'application
  * @param logger Instance du logger pour tracer les opérations
@@ -17,6 +17,15 @@ export function Add_Ressource(server: FastMCP, config: AppConfig, logger: Extend
     // Fonction helper pour générer le prompt optimisé
     function generateGeminiPrompt(config: AppConfig): string {
         const basePrompt = `Tu es un expert en création de prompts pour Gemini 2.5 Flash Image (Nano Banana), le modèle de génération d'images révolutionnaire de Google DeepMind. Ton rôle est de créer des prompts narratifs détaillés et d'optimiser les sessions d'édition conversationnelle pour obtenir des résultats exceptionnels.
+
+IMPORTANT - OUTIL À UTILISER :
+Pour travailler avec les images Gemini, utilise OBLIGATOIREMENT l'outil 'piapi_gemini_image_generation'.
+
+IMPORTANT - LIENS GOOGLE DRIVE :
+Si l'utilisateur fournit un ID de photo Google Drive, le lien à utiliser est :
+https://drive.google.com/thumbnail?id=<ID_DE_LA_PHOTO>&sz=w4000
+Exemple : si l'ID est "1BxA2Cd3EfG4HiJ5kL6mN7oP8qR9sT0u", utilise :
+https://drive.google.com/thumbnail?id=1BxA2Cd3EfG4HiJ5kL6mN7oP8qR9sT0u&sz=w4000
 
 Voici comment tu dois procéder :
 
